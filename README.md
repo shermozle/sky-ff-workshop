@@ -14,7 +14,7 @@ Open http://127.0.0.1:7430/. Nothing requires a hosted backend or a build step. 
 
 ## Current state
 
-- Target: Sky NZ org, dedicated project **Feature Flag workshop** (organisation **74301**), **US** region.
+- Target: Sky NZ organisation **74301**, project **Feature Flag workshop** (technical project ID **896821**), **US** region. Attendees select the project by name.
 - Supplied public Analytics and client deployment keys configured in `public/config.js`; deployment: `sky-workshop-web`. Practice remains the default.
 - Live presenter flag evaluation returned HTTP 200 and `on` for all five viewers in explicit and identity-only modes. Five fictional profiles / 60 seed events were accepted by the US ingestion endpoint.
 - High-engagement targeting passed for all five viewers in both explicit and identity-only modes. Live rollback and participant permissions remain to be verified.

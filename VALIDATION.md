@@ -52,4 +52,4 @@ End-to-end live rollback; attendee permissions; venue network check. Later secti
 
 ## Project identity correction
 
-Organisation ID: 74301. Project name: Feature Flag workshop. The numeric project ID is not confirmed. Earlier project-ID labels were incorrect; event ingestion and evaluation used the supplied keys and did not route by the displayed ID. Management examples now use YOUR_PROJECT_ID. Seed confirmation checks the project name. No seed rerun or credential changes were made for this correction.
+Organisation ID: 74301. Project name: Feature Flag workshop. The numeric project ID is 896821, confirmed by Simon. Earlier project-ID labels were incorrect; event ingestion and evaluation used the supplied keys and did not route by the displayed ID. Management examples and technical config use 896821; attendee instructions use the project name. Seed confirmation checks the project name. No seed rerun or credential changes were made for this correction.

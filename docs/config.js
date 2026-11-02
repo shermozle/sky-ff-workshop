@@ -1,6 +1,6 @@
 // Public browser keys only. Never put server deployment, management, or secret keys here.
 window.SKY_WORKSHOP_CONFIG = Object.freeze({
-  projectId: '', // Numeric project ID pending confirmation; 74301 is the org ID.
+  projectId: '896821',
   orgId: '74301',
   projectName: 'Feature Flag workshop',
   region: 'us',

@@ -100,7 +100,7 @@
         {
           "title": "Manage configuration programmatically",
           "minutes": 3,
-          "body": "<pre class=\"code\">GET   /api/1/flags?projectId=YOUR_PROJECT_ID\nPOST  /api/1/flags\nPATCH /api/1/flags/{flagId}\n      {\"enabled\": false}</pre><p class=\"deck\">Management API: configuration changes.<br>SDK / evaluation API: runtime decisions.</p><p class=\"caption\">Presenter examples use management credentials outside the static site.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/apis/experiment/experiment-management-api-flags\">Management API flag endpoints</a></p>",
+          "body": "<pre class=\"code\">GET   /api/1/flags?projectId=896821\nPOST  /api/1/flags\nPATCH /api/1/flags/{flagId}\n      {\"enabled\": false}</pre><p class=\"deck\">Management API: configuration changes.<br>SDK / evaluation API: runtime decisions.</p><p class=\"caption\">Presenter examples use management credentials outside the static site.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/apis/experiment/experiment-management-api-flags\">Management API flag endpoints</a></p>",
           "notes": "Open api-examples.html. Walk through a list, create and disable call. The create example associates a flag with a deployment but leaves activation to an explicit step. Management API access requires a separate management key, not either browser key. Runtime REST examples require a server deployment key. No participant runs these privileged calls.",
           "cut": "Cut point: show the list and disable calls only; the full examples remain in the guide.",
           "exercise": false
