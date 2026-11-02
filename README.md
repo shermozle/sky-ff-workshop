@@ -62,7 +62,7 @@ python3 scripts/build-pack.py
 python3 scripts/stage-pages.py
 ```
 
-Commit both source and generated files. GitHub Pages should use **Deploy from a branch → main → /docs**. All links support a repository subpath. The deck derives the hub URL from its current location.
+Commit both source and generated files. GitHub Pages should use **Deploy from a branch → main → /docs**. All links support a repository subpath. The deck displays the workshop short link: https://tinyurl.com/sky-ff.
 
 Public repository: https://github.com/shermozle/sky-ff-workshop
 
