@@ -23,7 +23,7 @@ Screenshots were inspected for desktop app and slide layout. Generated screensho
 
 ## Still pending
 
-Historical profile enrichment readiness; presenter flag property-based targeting; end-to-end live rollout/rollback; attendee permissions; venue network check; GitHub repository choice and publishing.
+End-to-end live rollback; attendee permissions; venue network check. Later sections record the completed targeting and deployment checks.
 
 ## Authorised live connection check
 

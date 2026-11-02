@@ -17,7 +17,7 @@ Open http://127.0.0.1:7430/. Nothing requires a hosted backend or a build step. 
 - Target: Sky NZ org, dedicated project **74301**, **US** region.
 - Supplied public Analytics and client deployment keys configured in `public/config.js`; deployment: `sky-workshop-web`. Practice remains the default.
 - Live presenter flag evaluation returned HTTP 200 and `on` for all five viewers in explicit and identity-only modes. Five fictional profiles / 60 seed events were accepted by the US ingestion endpoint.
-- High-engagement targeting passed for all five viewers in both explicit and identity-only modes. Live rollback, participant permissions and public deployment remain to be verified.
+- High-engagement targeting passed for all five viewers in both explicit and identity-only modes. Live rollback and participant permissions remain to be verified.
 - Live setup and rehearsal steps: `public/setup.html`.
 
 ## Live setup
@@ -64,6 +64,8 @@ python3 scripts/stage-pages.py
 
 Commit both source and generated files. GitHub Pages should use **Deploy from a branch → main → /docs**. All links support a repository subpath. The deck derives the hub URL from its current location.
 
-Proposed destination: `shermozle/sky-ff-workshop`. Publishing is pending confirmation of this repository name and public visibility.
+Public repository: https://github.com/shermozle/sky-ff-workshop
+
+Workshop hub: https://shermozle.github.io/sky-ff-workshop/
 
 Slides have keyboard navigation, full screen, section jump menu, section-aware timer and print-to-PDF styles. The app has visible practice/live status, default paths on missing/error results and URL-persisted synthetic identities. Runtime public keys are stored locally and intentionally excluded from copied scenario URLs.
