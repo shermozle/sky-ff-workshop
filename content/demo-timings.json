@@ -1,0 +1,10 @@
+[
+  {"id":"experience","seconds":20},
+  {"id":"orientation","seconds":25},
+  {"id":"aroha","seconds":40},
+  {"id":"casey","seconds":35},
+  {"id":"stored-data","seconds":120},
+  {"id":"latency","seconds":60},
+  {"id":"rollback","seconds":120},
+  {"id":"backends","seconds":60}
+]
