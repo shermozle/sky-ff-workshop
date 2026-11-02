@@ -2,42 +2,58 @@
   "duration": 90,
   "blocks": [
     {
-      "name": "Opening demo",
-      "minutes": 5,
+      "name": "Feature flag fundamentals",
+      "minutes": 10,
       "slides": [
         {
-          "title": "Feature flags for Sky NZ",
-          "minutes": 2,
-          "body": "<p class=\"big\">Control recommendations and content promotions.<br>Choose who sees a change, then roll it back.</p><div class=\"grid c2\"><div class=\"card\"><span class=\"tag\">90 minutes</span><h3>Configure, observe, discuss</h3><p>Use a ready-made app and five fictional viewers.</p></div><div class=\"card\"><span class=\"tag\">Today\u2019s scope</span><h3>A static streaming prototype</h3><p>Live mode calls Amplitude directly. Backend placement is an architecture discussion.</p></div></div>",
-          "notes": "Open the app in practice mode. Explain that the catalogue and viewers are fictional. Today\u2019s app has no Sky backend. The target is Feature Flag workshop in Sky NZ organisation 74301, US region; the supplied browser keys are configured. Verify live flags before presenting.",
-          "cut": "",
+          "title": "Feature flags: the basic idea",
+          "minutes": 1,
+          "body": "<p class=\"big\">Choose which existing application behavior runs, using configuration that can change after deployment.</p><p class=\"deck\">We\u2019ll explain the decision first, then see it in Sky\u2019s recommendation and promo-rail examples.</p>",
+          "notes": "Start on the slides, with the app closed or in another tab. Say: \u201cBefore we touch Amplitude, let\u2019s agree on what a feature flag actually does. It is a named decision our application checks while it runs. We deploy the code that supports a change, then use configuration to decide when and for whom that change is released.\u201d Give the room the shape of the session: concepts, a short demonstration, hands-on practice, then Sky\u2019s architecture discussion.",
+          "cut": "Keep the explanation concrete; use the recommendation rail as the running example.",
           "exercise": false
         },
         {
-          "title": "Watch a rollout change the rail",
+          "title": "Deploy code; choose when to release it",
+          "minutes": 2,
+          "body": "<div class=\"grid c2\"><div class=\"card\"><span class=\"tag\">Deploy</span><h3>Install the supported paths</h3><p>The application contains the current behavior and the new behavior.</p></div><div class=\"card\"><span class=\"tag\">Release</span><h3>Decide who uses the new path</h3><p>A flag returns a value at runtime. The application acts on it.</p></div></div><p class=\"caption\">Changing a flag updates a decision. Adding a new capability still requires application code.</p>",
+          "notes": "Say: \u201cImagine we have built a new recommendation-ranking strategy. We can deploy it alongside the existing strategy while keeping everyone on the existing one. The flag lets us release the new strategy to a test audience, then expand that audience. Switching the flag off selects the existing strategy again.\u201d Explain that a flag is not a remote code installer. Ask: \u201cCould you deploy on Tuesday and release to viewers on Thursday?\u201d Answer yes, provided both paths and the flag check are already deployed.",
+          "cut": "Keep the explanation concrete; use the recommendation rail as the running example.",
+          "exercise": false
+        },
+        {
+          "title": "What can a flag control?",
+          "minutes": 2,
+          "body": "<div class=\"grid c3\"><div class=\"card\"><span class=\"tag\">Backend</span><h3>Recommendation behavior</h3><p>Choose which ranking strategy or service path produces the rail.</p></div><div class=\"card\"><span class=\"tag\">Content presentation</span><h3>Promo-rail composition</h3><p>Choose a new collection, ordering or promotional treatment.</p></div><div class=\"card\"><span class=\"tag\">Client</span><h3>The viewer interface</h3><p>Choose which supported layout or component is rendered.</p></div></div><p class=\"caption\">Application code defines the effect. Targeting rules define who receives it.</p>",
+          "notes": "Walk through Sky\u2019s backend use cases first. Say: \u201cA flag doesn\u2019t have to control a button. It can select an algorithm, an API implementation or how a content rail is assembled. The same idea works in a TV client or browser.\u201d Keep the distinction between behavior and audience clear: code knows how to build the rail; the flag\u2019s rules decide which users receive that behavior. Authoritative subscription checks remain in their normal systems; a demo flag is not a replacement for entitlement enforcement.",
+          "cut": "Keep the explanation concrete; use the recommendation rail as the running example.",
+          "exercise": false
+        },
+        {
+          "title": "The parts of a feature flag",
+          "minutes": 2,
+          "body": "<ul class=\"rows\"><li><span class=\"term\">Key</span><span class=\"def\">The name application code asks for, such as <code>recommendation-rail</code>.</span></li><li><span class=\"term\">Variants</span><span class=\"def\">Possible results: <code>on</code> selects the new path; <code>off</code> selects the default in our app.</span></li><li><span class=\"term\">Targeting + rollout</span><span class=\"def\">Rules for eligibility and allocation, such as high engagement at 100%.</span></li><li><span class=\"term\">User context</span><span class=\"def\">A stable identity and the properties needed to evaluate those rules.</span></li></ul>",
+          "notes": "Introduce the vocabulary before any SDK discussion. Say: \u201cThe key is a stable identifier, not necessarily the display name. A variant is the value we get back. Our app treats the literal on value as enabled. A targeting rule might select high-engagement viewers; allocation decides how many of those eligible viewers receive on.\u201d Explain that percentage rollout is based on a bucketing identity and configuration rather than a fresh coin toss on each page load. Consistency depends on keeping the relevant identity, rules and bucketing settings aligned.",
+          "cut": "Keep the explanation concrete; use the recommendation rail as the running example.",
+          "exercise": false
+        },
+        {
+          "title": "How a flag is evaluated",
           "minutes": 3,
-          "body": "<ol class=\"steps\"><li>Switch from Aroha to Ben. Compare their subscriptions.</li><li>Target Sky Sport, evaluate, then switch viewers again.</li><li>Disable the practice flag and return to the default rail.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: the room can explain who saw the new rail</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
-          "notes": "Demonstrate a Sport target at 100%, Aroha on, Ben off, then rollback. Say that practice bucketing is simulated. In the live rehearsal repeat the demonstration with a presenter flag in Amplitude. Ask where Sky would put this decision in its recommendation stack.",
-          "cut": "",
+          "body": "<svg viewBox=\"0 0 1120 330\" role=\"img\" aria-labelledby=\"eval-title eval-desc\" style=\"width:100%;height:330px;margin-top:16px;font-family:system-ui,sans-serif\">\n<title id=\"eval-title\">How a feature flag becomes an application decision</title><desc id=\"eval-desc\">Flag rules and viewer context feed an evaluator. It returns an on or off variant. Application code uses that value to select the new rail or the default rail.</desc>\n<defs><marker id=\"eval-arrow\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"4\" orient=\"auto\"><path d=\"M0 0 L8 4 L0 8\" fill=\"none\" stroke=\"#71dbcc\" stroke-width=\"1.5\"/></marker></defs>\n<g fill=\"#152237\" stroke=\"#486183\" stroke-width=\"1.5\"><rect x=\"0\" y=\"20\" width=\"250\" height=\"120\" rx=\"12\"/><rect x=\"0\" y=\"190\" width=\"250\" height=\"120\" rx=\"12\"/><rect x=\"330\" y=\"105\" width=\"230\" height=\"120\" rx=\"12\"/><rect x=\"640\" y=\"105\" width=\"180\" height=\"120\" rx=\"12\"/><rect x=\"900\" y=\"75\" width=\"220\" height=\"180\" rx=\"12\"/></g>\n<g fill=\"none\" stroke=\"#71dbcc\" stroke-width=\"2.5\" marker-end=\"url(#eval-arrow)\"><path d=\"M250 80 H280 Q295 80 295 110 V135 H320\"/><path d=\"M250 250 H280 Q295 250 295 220 V195 H320\"/><path d=\"M560 165 H630\"/><path d=\"M820 165 H890\"/></g>\n<g fill=\"#f0f3f8\" font-size=\"23\" font-weight=\"650\"><text x=\"18\" y=\"53\">Flag configuration</text><text x=\"18\" y=\"224\">Viewer context</text><text x=\"349\" y=\"146\">Evaluate rules</text><text x=\"659\" y=\"146\">Variant</text><text x=\"919\" y=\"117\">Application code</text></g>\n<g fill=\"#bdcce1\" font-size=\"19\"><text x=\"18\" y=\"86\">engagement = high</text><text x=\"18\" y=\"115\">100% of matches \u2192 on</text><text x=\"18\" y=\"257\">user_id: Aroha</text><text x=\"18\" y=\"286\">engagement: high</text><text x=\"349\" y=\"179\">Match + allocation</text><text x=\"349\" y=\"207\">at the decision point</text><text x=\"659\" y=\"191\" fill=\"#71dbcc\" font-size=\"31\" font-weight=\"700\">on</text><text x=\"919\" y=\"161\">on \u2192 new rail</text><text x=\"919\" y=\"195\">off \u2192 default rail</text><text x=\"919\" y=\"231\" font-size=\"17\">Both paths already exist.</text></g></svg><p class=\"caption\">Rules + user context \u2192 variant \u2192 application behavior. Casey\u2019s low engagement would select the default path.</p>",
+          "notes": "Trace the diagram left to right. Say: \u201cThe evaluator needs two inputs: the flag configuration and the viewer context. Here the rule targets high engagement, and Aroha\u2019s engagement is high. The evaluator checks the rule and allocation, then returns on. Our application code interprets on and calls the new rail implementation.\u201d Contrast Casey, who has low engagement and receives off under this rule. Say: \u201cThe returned value is data. Our code chooses what to do with it.\u201d Then bridge to architecture: \u201cNow we can ask where this evaluator lives, how it gets configuration, and which network requests are involved.\u201d Do not open the app yet.",
+          "cut": "Keep the explanation concrete; use the recommendation rail as the running example.",
           "exercise": false
         }
       ]
     },
     {
-      "name": "How flags work",
-      "minutes": 15,
+      "name": "Architecture and delivery",
+      "minutes": 10,
       "slides": [
         {
-          "title": "A flag is a runtime decision",
-          "minutes": 2,
-          "body": "<div class=\"flow\"><div class=\"node\">Application code<small>Two supported experiences</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Flag decision<small>A key resolves to a variant</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">User experience<small>Render the selected path</small></div></div><p class=\"deck\">The application must already contain the new behavior and a working default.</p>",
-          "notes": "Use recommendation-rail as the example. The on variant selects a different fictional rail. A configuration change controls existing code; a flag cannot install missing behavior or undo a destructive data migration.",
-          "cut": "",
-          "exercise": false
-        },
-        {
           "title": "Configuration and evaluation are separate",
-          "minutes": 2,
+          "minutes": 1,
           "body": "<div class=\"flow\"><div class=\"node\">Control plane<small>Create rules, variants and rollout</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Delivery + SDK<small>Retrieve configuration or decisions</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Application<small>Use the result at the decision point</small></div></div><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/experiment-quick-start\">Experiment quick start</a></p>",
           "notes": "A deployment groups flags delivered to a particular integration. In the workshop all participant flags join the web client deployment. A server deployment would belong to the backend service. A flag key and a management API flag ID are different identifiers.",
           "cut": "",
@@ -47,15 +63,15 @@
           "title": "Local and remote evaluation",
           "minutes": 3,
           "body": "<table class=\"compare\"><tr><th></th><th>Local evaluation</th><th>Remote evaluation</th></tr><tr><td>Decision happens</td><td>Inside the SDK runtime</td><td>At Amplitude</td></tr><tr><td>Decision inputs</td><td>Locally available user data</td><td>Request data + supported enrichment</td></tr><tr><td>Network on decision path</td><td>No, after configuration loads</td><td>Yes, when fetching a decision</td></tr></table><p class=\"caption\">Server-side code can use either mode. Remote does not mean browser-only.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/remote-evaluation\">Remote evaluation</a></p>",
-          "notes": "Draw a backend boundary verbally: a server can ask Amplitude for a remote result or evaluate locally with prefetched configuration. This static app demonstrates remote evaluation; it does not benchmark a server SDK. Local cohort support depends on SDK and setup; avoid claiming that every targeting capability is identical.",
+          "notes": "Refer back to the evaluator box in the previous diagram. With local evaluation, that box sits inside the SDK runtime, which can be a backend service. With remote evaluation, that box sits at Amplitude and the caller fetches a result. Server-side code can use either mode. Explain that remote enrichment can use stored Analytics properties, while local evaluation needs the relevant inputs available locally or supported sync configuration. The static app will demonstrate remote evaluation; it does not benchmark a server SDK.",
           "cut": "",
           "exercise": false
         },
         {
           "title": "Three operations, three timings",
-          "minutes": 2,
+          "minutes": 1,
           "body": "<div class=\"grid c3\"><div class=\"card\"><span class=\"tag\">1</span><h3>Fetch a decision</h3><p>Network round trip plus service and SDK work.</p></div><div class=\"card\"><span class=\"tag\">2</span><h3>Read a cached variant</h3><p>Read an already fetched decision. No rule evaluation is implied.</p></div><div class=\"card\"><span class=\"tag\">3</span><h3>Evaluate locally</h3><p>Run rules against a user and cached configuration.</p></div></div><p class=\"caption\">A quick cached read does not measure remote evaluation latency.</p>",
-          "notes": "Use the inspector. Its fetch timer includes SDK processing; its cached-read timer wraps variant access. It cannot tell whether Amplitude served a CDN hit. Browser timings are not an estimate of Sky backend p95 or p99 latency.",
+          "notes": "Explain the three operations using the slide before opening the app. A remote fetch includes network and SDK work. A variant read retrieves a result already stored by the client. A local evaluation executes targeting logic against available user data and downloaded configuration. We will observe fetch and cached-read timings in the app later; neither is a benchmark of Sky backend local evaluation.",
           "cut": "",
           "exercise": false
         },
@@ -69,7 +85,7 @@
         },
         {
           "title": "Design latency and failure behavior",
-          "minutes": 2,
+          "minutes": 1,
           "body": "<ol class=\"steps\"><li>Choose a refresh strategy and a time budget.</li><li>Serve an intentional default when evaluation is unavailable.</li><li>Measure from Sky\u2019s actual runtime and network location.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: there is an owner for defaults and refresh behavior</span></div><p class=\"caption\">Seed historical profiles before the session. Property enrichment can lag profile updates.</p>",
           "notes": "For recommendation services, ask if a default rail is acceptable during an outage. This app discards the prior identity\u2019s decision and shows the default during a fetch or on failure. Other production systems may choose last-known-good for the same identity; that is an explicit engineering choice.",
           "cut": "",
@@ -108,14 +124,22 @@
       ]
     },
     {
-      "name": "Hands-on setup",
+      "name": "Demonstration and setup",
       "minutes": 5,
       "slides": [
         {
+          "title": "See the decision in the streaming app",
+          "minutes": 2,
+          "body": "<ol class=\"steps\"><li>Use the live <code>presenter-recommendations</code> flag.</li><li>Evaluate Aroha: high engagement selects the new rail.</li><li>Evaluate Casey: low engagement selects the default rail.</li></ol><p class=\"caption\">Same application code; different viewer context; different result.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
+          "notes": "This is the first app demonstration, after 25 minutes of explanation. Open the live presenter scenario with explicit properties and the high-engagement rule active. Select Aroha and evaluate, then Casey and evaluate. Connect each observed result to the evaluator diagram. Keep this to two minutes so participants have time to open their own workspaces. Save the identity-only demonstration and rollback for the relevant stations; the separate app-demo script provides the longer spoken walkthrough.",
+          "cut": "Show Aroha and Casey only; move to participant setup at minute 27.",
+          "exercise": false
+        },
+        {
           "title": "Open your workshop workspace",
-          "minutes": 5,
+          "minutes": 3,
           "body": "<ol class=\"steps\"><li>Open the app and exercise guide from the hub.</li><li>Select Live once the presenter has configured the deployment.</li><li>Choose a unique prefix: <code>alex-recommendations</code>.</li><li>Use project Feature Flag workshop and the shared web client deployment.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: you can find the project, app and viewer selector</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
-          "notes": "Confirm create, edit and activation permissions before starting. If live keys are still unavailable, tell the room explicitly that practice mode is a simulation. Have a presenter flag ready for anyone without edit access. Each attendee should use their own unique flag prefix. Do not edit someone else\u2019s flag.",
+          "notes": "After the presenter demonstration, ask participants to open the app and exercise guide. Confirm the Feature Flag workshop project and permissions. Each attendee uses their own unique flag prefix. Have a presenter flag ready for anyone without edit access. Practice mode is explicitly a simulation; use Live when connected.",
           "cut": "",
           "exercise": true
         }

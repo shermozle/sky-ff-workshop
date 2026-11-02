@@ -5,6 +5,7 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '../public');
 const output = path.resolve(__dirname, '../artifacts');
+const slideCount = require('../content/workshop.json').blocks.reduce((sum, block) => sum + block.slides.length, 0);
 fs.mkdirSync(output, { recursive: true });
 const server = http.createServer((req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).replace(/^\/workshop\//, '/');
@@ -125,15 +126,15 @@ async function main() {
           return failures;
         });
         assert.deepEqual(problems, [], 'Deck layout');
-        assert.equal(await page.locator('.slide').count(), 20);
-        assert.equal(await page.locator('#jump button').count(), 20);
-        await page.keyboard.press('ArrowRight'); assert.equal(await page.locator('.slide.on').getAttribute('data-title'), 'Watch a rollout change the rail');
+        assert.equal(await page.locator('.slide').count(), slideCount);
+        assert.equal(await page.locator('#jump button').count(), slideCount);
+        await page.keyboard.press('ArrowRight'); assert.equal(await page.locator('.slide.on').getAttribute('data-title'), 'Deploy code; choose when to release it');
         await page.goto(base + 'slides.html#5');
-        assert.equal(await page.locator('.slide.on').getAttribute('data-title'), 'Local and remote evaluation');
+        assert.equal(await page.locator('.slide.on').getAttribute('data-title'), 'How a flag is evaluated');
         await page.screenshot({ path: path.join(output, 'slides-architecture.png') });
         await page.keyboard.press('o'); check(await page.locator('#jump').isVisible(), 'Jump menu'); await page.keyboard.press('Escape');
         await page.emulateMedia({ media: 'print' });
-        assert.equal(await page.locator('.slide:visible').count(), 20, 'Print shows all slides'); await page.emulateMedia({ media: 'screen' });
+        assert.equal(await page.locator('.slide:visible').count(), slideCount, 'Print shows all slides'); await page.emulateMedia({ media: 'screen' });
       } else {
         await page.setViewportSize({ width: 390, height: 844 });
         check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${file} has mobile horizontal overflow`);
@@ -143,7 +144,7 @@ async function main() {
     }
     assert.deepEqual(errors, [], 'No browser runtime errors');
     await context.close();
-    console.log('PASS · practice targeting/rollback, URL round-trip/private context, live real-SDK contracts, explicit/historical inputs, identity clearing, deployment switching, cache reads, HTTP/malformed/missing errors, exposure/preview events, all local links, 20-slide layout/navigation/print, mobile layouts.');
+    console.log('PASS · practice targeting/rollback, URL round-trip/private context, live real-SDK contracts, explicit/historical inputs, identity clearing, deployment switching, cache reads, HTTP/malformed/missing errors, exposure/preview events, all local links, slide layout/navigation/print, mobile layouts.');
   } finally { await browser.close(); }
 }
 main().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server.close());
