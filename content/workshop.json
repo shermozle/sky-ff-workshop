@@ -94,10 +94,11 @@
         {
           "title": "Design latency and failure behavior",
           "minutes": 1,
-          "body": "<ol class=\"steps\"><li>Choose a refresh strategy and a time budget.</li><li>Serve an intentional default when evaluation is unavailable.</li><li>Measure from Sky\u2019s actual runtime and network location.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: there is an owner for defaults and refresh behavior</span></div><p class=\"caption\">Seed historical profiles before the session. Property enrichment can lag profile updates.</p>",
+          "body": "<ol class=\"steps\"><li>Choose a refresh strategy and a time budget.</li><li>Serve an intentional default when evaluation is unavailable.</li><li>Measure from Sky\u2019s actual runtime and network location.</li></ol><p class=\"caption\">Seed historical profiles before the session. Property enrichment can lag profile updates.</p>",
           "notes": "For recommendation services, ask if a default rail is acceptable during an outage. This app discards the prior identity\u2019s decision and shows the default during a fetch or on failure. Other production systems may choose last-known-good for the same identity; that is an explicit engineering choice.",
           "cut": "",
-          "exercise": false
+          "exercise": false,
+          "checkpoint": "there is an owner for defaults and refresh behavior"
         },
         {
           "title": "Rollout and rollback need observation",
@@ -154,10 +155,11 @@
         {
           "title": "Open your workshop workspace",
           "minutes": 3,
-          "body": "<ol class=\"steps\"><li>Open the app and exercise guide from the hub.</li><li>Select Live once the presenter has configured the deployment.</li><li>Choose a unique prefix: <code>alex-recommendations</code>.</li><li>Use project Feature Flag workshop and the shared web client deployment.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: you can find the project, app and viewer selector</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div>",
+          "body": "<ol class=\"steps\"><li>Open the app and exercise guide from the hub.</li><li>Select Live once the presenter has configured the deployment.</li><li>Choose a unique prefix: <code>alex-recommendations</code>.</li><li>Use project Feature Flag workshop and the shared web client deployment.</li></ol><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div>",
           "notes": "Share tinyurl.com/sky-ff with the room. After the presenter demonstration, ask participants to open the app and exercise guide. Confirm the Feature Flag workshop project and permissions. Each attendee uses their own unique flag prefix. Have a presenter flag ready for anyone without edit access. Practice mode is explicitly a simulation; use Live when connected.",
           "cut": "",
-          "exercise": true
+          "exercise": true,
+          "checkpoint": "you can find the project, app and viewer selector"
         }
       ]
     },
@@ -168,10 +170,11 @@
         {
           "title": "1 / Create your recommendation flag",
           "minutes": 12,
-          "body": "<ol class=\"steps\"><li>Create a remote-evaluation flag with your unique key and an <code>on</code> variant.</li><li>Attach the workshop web deployment and activate at 100%.</li><li>Paste the key into the app and evaluate.</li><li>Target <code>subscription_packages</code> containing <code>Sky Sport</code>; leave other users off.</li><li>Compare Aroha, Ben and Dev.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: Aroha and Dev see the new rail; Ben sees the default</span></div><p class=\"caption\">Use identity + profile properties for this station. Incognito alone does not change identity.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div>",
+          "body": "<ol class=\"steps\"><li>Create a remote-evaluation flag with your unique key and an <code>on</code> variant.</li><li>Attach the workshop web deployment and activate at 100%.</li><li>Paste the key into the app and evaluate.</li><li>Target <code>subscription_packages</code> containing <code>Sky Sport</code>; leave other users off.</li><li>Compare Aroha, Ben and Dev.</li></ol><p class=\"caption\">Use identity + profile properties for this station. Incognito alone does not change identity.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div>",
           "notes": "At minute 30 begin this station. Confirm all-other-users is off; the target segment allocates 100% to on. With array properties use the available contains/member operator for Sky Sport and check the UI preview. Aroha and Dev qualify. Ben does not. The app treats only the literal variant value on as enabled. If anyone is stuck, pair them with a working participant or use the presenter flag.",
           "cut": "",
-          "exercise": true
+          "exercise": true,
+          "checkpoint": "Aroha and Dev see the new rail; Ben sees the default"
         }
       ]
     },
@@ -182,10 +185,11 @@
         {
           "title": "2 / Test identity and release scope",
           "minutes": 10,
-          "body": "<ol class=\"steps\"><li>Remove the subscription rule; set an all-user rollout to 50%.</li><li>Compare all five viewers, then re-evaluate the same viewer.</li><li>Copy the scenario URL into Incognito; keep the identity unchanged.</li><li>Switch the selected viewer to test another identity.</li><li>Disable the flag in Amplitude and evaluate again.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: the new rail disappears after rollback and refresh</span></div><p class=\"caption\">Five viewers may not split evenly at 50%. Flag keys are in the URL; connection keys are not.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div>",
+          "body": "<ol class=\"steps\"><li>Remove the subscription rule; set an all-user rollout to 50%.</li><li>Compare all five viewers, then re-evaluate the same viewer.</li><li>Copy the scenario URL into Incognito; keep the identity unchanged.</li><li>Switch the selected viewer to test another identity.</li><li>Disable the flag in Amplitude and evaluate again.</li></ol><p class=\"caption\">Five viewers may not split evenly at 50%. Flag keys are in the URL; connection keys are not.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div>",
           "notes": "By minute 42 move to percentage rollout. Keep consistent bucketing settings. Incognito may need keys entered again until they are deployed in config.js. Same identity is necessary for stable comparison; other rule inputs and configuration must stay the same too. Do not imply a five-user sample must split 2/3. Confirm the real rollback in Amplitude and fetch again. Practice rollback is available only in simulated mode.",
           "cut": "",
-          "exercise": true
+          "exercise": true,
+          "checkpoint": "the new rail disappears after rollback and refresh"
         }
       ]
     },
@@ -196,10 +200,11 @@
         {
           "title": "3 / Use what Amplitude knows",
           "minutes": 13,
-          "body": "<ol class=\"steps\"><li>Set <code>engagement_level = high</code> as the target at 100%; everyone else off.</li><li>Select \u201cSend identity only\u201d and evaluate Aroha and Casey.</li><li>Expand Request inputs: no profile properties are sent.</li><li>Inspect the seeded user profiles in Amplitude.</li><li>Explain where the request and the enrichment happen.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: Aroha qualifies, Casey does not, with identity-only requests</span></div><p class=\"caption\">The fixture panel shows expected data. Inspect Amplitude to verify the stored profile.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div>",
+          "body": "<ol class=\"steps\"><li>Set <code>engagement_level = high</code> as the target at 100%; everyone else off.</li><li>Select \u201cSend identity only\u201d and evaluate Aroha and Casey.</li><li>Expand Request inputs: no profile properties are sent.</li><li>Inspect the seeded user profiles in Amplitude.</li><li>Explain where the request and the enrichment happen.</li></ol><p class=\"caption\">The fixture panel shows expected data. Inspect Amplitude to verify the stored profile.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div>",
           "notes": "Start at minute 52 and finish by 65. Ensure previous rules are removed. In the live rehearsal verify Aroha high and Casey low ahead of time. The server enriches the remote request from stored Analytics properties. The browser inspector cannot show Amplitude\u2019s private enrichment internals; use profile inspection plus identity-only requests and outcomes as evidence. Property freshness can lag, so do not make attendees update a profile and expect an immediate change. If profiles are not ready, demonstrate explicit inputs and explain why this station cannot yet be verified.",
           "cut": "",
-          "exercise": true
+          "exercise": true,
+          "checkpoint": "Aroha qualifies, Casey does not, with identity-only requests"
         }
       ]
     },
@@ -254,10 +259,11 @@
         {
           "title": "Questions and next steps",
           "minutes": 5,
-          "body": "<ol class=\"steps\"><li>Which backend decision is the first candidate?</li><li>Which evaluation mode fits its data and latency needs?</li><li>Who owns setup, verification and the rollback rehearsal?</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: there is a concrete next step</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div><p class=\"caption\">Optional buffer station: create a second promo flag and copy a scenario containing both keys.</p>",
+          "body": "<ol class=\"steps\"><li>Which backend decision is the first candidate?</li><li>Which evaluation mode fits its data and latency needs?</li><li>Who owns setup, verification and the rollback rehearsal?</li></ol><div class=\"urlbox\"><a class=\"workshop-url\" href=\"https://tinyurl.com/sky-ff\">tinyurl.com/sky-ff</a></div><p class=\"caption\">Optional buffer station: create a second promo flag and copy a scenario containing both keys.</p>",
           "notes": "Use this time for questions and recovery. Optional station 4 is the promo flag: create a second remote on/off flag, attach the same deployment, enter its key, target Movies and compare Ben with Aroha. This is extra practice, not a prerequisite. End by capturing the owner of the first technical follow-up.",
           "cut": "Optional station 4 is the first material to omit if time is tight.",
-          "exercise": true
+          "exercise": true,
+          "checkpoint": "there is a concrete next step"
         }
       ]
     }

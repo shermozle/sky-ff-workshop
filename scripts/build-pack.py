@@ -42,9 +42,10 @@ for act, block in enumerate(manifest['blocks']):
     notes.append(f'<section><h2>{esc(block["name"])}</h2><p class="budget">{block["minutes"]} minutes · Session {clock(elapsed*60)}–{clock((elapsed+block["minutes"])*60)}</p>')
     for s in block['slides']:
         num=len(slides)+1
+        checkpoint = f'<p class="done"><strong>Presenter checkpoint:</strong> {esc(s["checkpoint"])}</p>' if s.get('checkpoint') else ''
         eyebrow=f'<div class="eyebrow"><span class="dot"></span>Sky NZ / {esc(block["name"])}<span class="mins">{elapsed:02d}–{elapsed+s["minutes"]:02d} min</span></div>'
         slides.append(f'<section class="slide {"ex" if s.get("exercise") else ""}" data-act="{act}" data-title="{esc(s["title"],quote=True)}">{eyebrow}<div class="body"><h2 class="head">{esc(s["title"])}</h2>{s["body"]}</div></section>')
-        notes.append(f'<article class="slide-block"><h3><span class="sn">{num}</span><a href="slides.html#{num}">{esc(s["title"])}</a><span class="clock">{s["minutes"]} min</span></h3><p class="timing" data-start="{elapsed*60}" data-end="{(elapsed+s["minutes"])*60}"><strong>Session {clock(elapsed*60)}–{clock((elapsed+s["minutes"])*60)}</strong><span>Spend {s["minutes"]} min · move on by {clock((elapsed+s["minutes"])*60)}</span></p><p>{s["notes"]}</p><p class="cut">{s.get("cut", "Keep to the clock and leave time for participants to complete the exercises.")}</p></article>')
+        notes.append(f'<article class="slide-block"><h3><span class="sn">{num}</span><a href="slides.html#{num}">{esc(s["title"])}</a><span class="clock">{s["minutes"]} min</span></h3><p class="timing" data-start="{elapsed*60}" data-end="{(elapsed+s["minutes"])*60}"><strong>Session {clock(elapsed*60)}–{clock((elapsed+s["minutes"])*60)}</strong><span>Spend {s["minutes"]} min · move on by {clock((elapsed+s["minutes"])*60)}</span></p><p>{s["notes"]}</p>{checkpoint}<p class="cut">{s.get("cut", "Keep to the clock and leave time for participants to complete the exercises.")}</p></article>')
         elapsed += s['minutes']
     notes.append('</section>')
 assert elapsed == 90
