@@ -215,16 +215,16 @@ pre.code .hl { color: var(--action); }
 /* ---------- full-screen button ---------- */
 
 #fsbtn {
-  position: fixed; top: 14px; left: 16px; z-index: 40;
+  position: fixed; top: 14px; right: 16px; z-index: 40;
   display: flex; align-items: center; gap: 8px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-  padding: 7px 11px; color: var(--dim); cursor: pointer;
-  font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
-  opacity: .38; transition: opacity .18s ease, color .18s ease, border-color .18s ease;
+  background: #1b63c7; border: 1px solid #7ab1ff; border-radius: 8px;
+  min-height: 44px; padding: 10px 16px; color: #fff; cursor: pointer;
+  font-family: var(--sans); font-size: 14px; font-weight: 650;
+  opacity: 1; transition: background .18s ease;
 }
-#fsbtn:hover { opacity: 1; color: var(--text); border-color: var(--line-hi); }
+#fsbtn:hover { background: #2875e0; }
 #fsbtn:focus-visible { opacity: 1; outline: 2px solid var(--signal); outline-offset: 2px; }
-#fsbtn svg { width: 13px; height: 13px; flex: none; }
+#fsbtn svg { width: 18px; height: 18px; flex: none; }
 #fsbtn .exit { display: none; }
 body.isfull #fsbtn .enter { display: none; }
 body.isfull #fsbtn .exit { display: block; }
@@ -327,14 +327,14 @@ PATCH /api/1/flags/{flagId}
   </div>
 </div>
 
-<button id="fsbtn" type="button" aria-label="Toggle full screen">
+<button id="fsbtn" type="button" aria-label="Enter fullscreen" aria-pressed="false" title="Fullscreen (F)">
   <svg class="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
     <path d="M1.5 5.5v-4h4M14.5 5.5v-4h-4M1.5 10.5v4h4M14.5 10.5v4h-4"/>
   </svg>
   <svg class="exit" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
     <path d="M5.5 1.5v4h-4M10.5 1.5v4h4M5.5 14.5v-4h-4M10.5 14.5v-4h4"/>
   </svg>
-  <span class="label">Full screen</span>
+  <span class="label">Fullscreen</span>
 </button>
 
 <div id="timer" aria-live="off">
@@ -356,7 +356,7 @@ PATCH /api/1/flags/{flagId}
       <dt>Home / End</dt><dd>First / last slide</dd>
       <dt>O</dt><dd>Jump menu</dd>
       <dt>T / R</dt><dd>Start-stop timer / reset it</dd>
-      <dt>F</dt><dd>Full screen (or the button, top left)</dd>
+      <dt>F</dt><dd>Fullscreen (or the button, top right)</dd>
       <dt>?</dt><dd>This panel</dd>
     </dl>
   </div>
@@ -524,7 +524,9 @@ PATCH /api/1/flags/{flagId}
   function syncFullscreen() {
     var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
     document.body.classList.toggle("isfull", on);
-    fsbtn.querySelector(".label").textContent = on ? "Exit" : "Full screen";
+    fsbtn.querySelector(".label").textContent = on ? "Exit fullscreen" : "Fullscreen";
+    fsbtn.setAttribute("aria-label", on ? "Exit fullscreen" : "Enter fullscreen");
+    fsbtn.setAttribute("aria-pressed", String(on));
     fit();
   }
   // stopPropagation matters: clicking the viewport advances the slide, and
