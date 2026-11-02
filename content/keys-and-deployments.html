@@ -1,0 +1,25 @@
+<span class="eyebrow">REFERENCE / SETUP AND PROGRAMMATIC CONTROL</span>
+<h1>Deployments and keys.</h1>
+<p class="lead">Use the flag key to name a decision, the deployment key to connect its SDK, and the Analytics API key to send workshop data.</p>
+<h2>What is a deployment?</h2>
+<p>In this workshop, <strong>sky-workshop-web</strong> is the Amplitude deployment: the named group of flags available to the browser integration. It belongs to <strong>Feature Flag workshop</strong>. Attach your flag to this deployment so the app can request its decision.</p>
+<p>One project can have several deployments, such as web, TV clients and a recommendation service. One flag can be attached to several deployments. A deployment does not host code or deploy a release. All participants share the workshop web deployment and use their own flag keys.</p>
+<div class="callout"><strong>Example:</strong> the browser initialises its SDK with the shared <code>client-…</code> deployment key, then asks for <code>alex-recommendations</code>. The first connects it to the available flags; the second identifies Alex’s decision.</div>
+<h2>Which key does what?</h2>
+<div class="table-wrap"><table><thead><tr><th>Key</th><th>Purpose</th><th>Used here</th><th>Where it belongs</th></tr></thead><tbody>
+<tr><td><strong>Flag key</strong><br><code>presenter-recommendations</code></td><td>The identifier code uses to request one flag.</td><td>Participant flag-key field and SDK variant lookup.</td><td>Application code / scenario URL. It is not a credential.</td></tr>
+<tr><td><strong>Client deployment key</strong><br><code>client-…</code></td><td>Connects a client SDK to a deployment and its linked flags.</td><td>Initialises the browser Experiment SDK.</td><td>Browser-safe application configuration.</td></tr>
+<tr><td><strong>Analytics project API key</strong></td><td>Routes ingested user properties and events to a project.</td><td>Presenter’s seed script and optional exposure / preview events.</td><td>Browser-safe configuration or a data-ingestion script.</td></tr>
+<tr><td><strong>Server deployment key</strong><br><code>server-…</code></td><td>Runtime evaluation for a backend SDK or evaluation REST API.</td><td>Reference terminal example only; not used by this static app.</td><td>Secret: trusted backend or presenter environment.</td></tr>
+<tr><td><strong>Experiment management API key</strong></td><td>Creates and changes flags, experiments and deployments.</td><td>Reference create / disable commands only.</td><td>Secret: authorised script or CI environment.</td></tr>
+<tr><td><strong>Analytics project secret key</strong></td><td>Authenticates protected Analytics data APIs.</td><td>Not needed for the workshop app or the seed script.</td><td>Secret: trusted server environment.</td></tr>
+</tbody></table></div>
+<p>Deployment types and key handling are described in <a href="https://amplitude.com/docs/feature-experiment/workflow/configure">Configure Experiment</a> and <a href="https://amplitude.com/docs/apis/keys-and-tokens">Keys and Tokens</a>.</p>
+<h2>A naming trap in SDK examples</h2>
+<pre>Experiment.initialize('CLIENT_DEPLOYMENT_KEY', { serverZone: 'us' });</pre>
+<p>The SDK may call its parameter <code>apiKey</code>, but Experiment initialisation expects a <strong>deployment key</strong>. The Analytics API key has a separate job: sending data into Analytics.</p>
+<h2>Names and IDs are different again</h2>
+<p>Participants select <strong>Feature Flag workshop</strong> by name. The technical project ID is <code>896821</code>; the Sky NZ organisation ID is <code>74301</code>. A deployment has a display name, a management ID and a generated deployment key. A flag has a display name, a management ID and its runtime flag key. Use the management IDs where API URLs request them; use the flag key in the app’s flag field.</p>
+<h2>Why a flag might not appear</h2>
+<p>Check the project, exact flag key, remote evaluation mode, activation and allocation, and association with <strong>sky-workshop-web</strong>. A matching name alone does not connect a flag to the app.</p>
+<p><a href="handout.html">Exercise guide</a> · <a href="api-examples.html">API examples</a> · <a href="talk-track.html">Speaking notes</a></p>

@@ -52,16 +52,24 @@
       "minutes": 10,
       "slides": [
         {
-          "title": "Configuration and evaluation are separate",
-          "minutes": 1,
-          "body": "<div class=\"flow\"><div class=\"node\">Control plane<small>Create rules, variants and rollout</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Delivery + SDK<small>Retrieve configuration or decisions</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Application<small>Use the result at the decision point</small></div></div><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/experiment-quick-start\">Experiment quick start</a></p>",
-          "notes": "A deployment groups flags delivered to a particular integration. In the workshop all participant flags join the web client deployment. A server deployment would belong to the backend service. A flag key and a management API flag ID are different identifiers.",
+          "title": "What is a deployment?",
+          "minutes": 2,
+          "body": "<p class=\"deck\">A named group of flags made available to an application or service integration.</p><div class=\"flow\"><div class=\"node\">Browser SDK<small>Initialised with a client deployment key</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">sky-workshop-web<small>A deployment in Feature Flag workshop</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Linked flags<small>Presenter flag + participant flags</small></div></div><p class=\"caption\">Creating a deployment does not host code. A flag must be attached to the deployment used by its SDK.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/workflow/configure\">Configure Experiment</a></p>",
+          "notes": "Say: \u201cHere, deployment means a named group of flags that an application or service can access. Our browser app uses sky-workshop-web. When we initialise its SDK with that deployment\u2019s key, Amplitude knows which linked flags are available.\u201d Explain that a deployment belongs to one Analytics project. A project can have multiple deployments, such as web, a TV client, and a recommendation service. The same flag can be attached to multiple deployments when those integrations need it. Give the workshop consequence: every participant attaches their flag to sky-workshop-web; entering a correct flag key in the app is not enough if the flag is missing from that deployment. All 19 participants can share this deployment; they do not need one each. Creating a deployment in Amplitude does not deploy application code or create a hosting server. Its type determines which SDK and deployment key to use: client for a browser, server for a backend.",
           "cut": "",
           "exercise": false
         },
         {
+          "title": "The three keys used by this app",
+          "minutes": 2,
+          "exercise": false,
+          "body": "<ul class=\"rows\"><li><span class=\"term\">Flag key</span><span class=\"def\"><code>presenter-recommendations</code><br>Identifies the decision code asks for. Not a credential.</span></li><li><span class=\"term\">Client deployment key</span><span class=\"def\"><code>client-\u2026</code><br>Connects the SDK to sky-workshop-web and its linked flags.</span></li><li><span class=\"term\">Analytics API key</span><span class=\"def\">Routes seeded profiles and optional events to the Analytics project.</span></li></ul><p class=\"caption\">The client deployment key and Analytics API key are browser-safe. Neither is a management API key.</p>",
+          "notes": "Say: \u201cThere are three different things we have called a key. The flag key is just the decision\u2019s identifier: presenter-recommendations. Each participant creates their own. The client deployment key is shared application configuration: it connects the browser SDK to sky-workshop-web. The Analytics API key sends our fictional profiles and events into the right Analytics project.\u201d Give a question for each: flag key means which decision; deployment key means which group of available flags; Analytics API key means which project receives data. Both browser keys are intended to be visible in client applications. They do not let a participant manage flag configuration. Call out the SDK naming trap: the apiKey parameter of Experiment.initialize expects a deployment key, not the Analytics API key. The numeric project ID and organisation ID identify resources for administration; attendees select Feature Flag workshop by name. A management flag ID used in API URLs is different from its runtime flag key.",
+          "cut": "Use the three \u201cwhich?\u201d questions; the detailed key reference remains linked from the workshop."
+        },
+        {
           "title": "Local and remote evaluation",
-          "minutes": 3,
+          "minutes": 2,
           "body": "<table class=\"compare\"><tr><th></th><th>Local evaluation</th><th>Remote evaluation</th></tr><tr><td>Decision happens</td><td>Inside the SDK runtime</td><td>At Amplitude</td></tr><tr><td>Decision inputs</td><td>Locally available user data</td><td>Request data + supported enrichment</td></tr><tr><td>Network on decision path</td><td>No, after configuration loads</td><td>Yes, when fetching a decision</td></tr></table><p class=\"caption\">Server-side code can use either mode. Remote does not mean browser-only.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/remote-evaluation\">Remote evaluation</a></p>",
           "notes": "Refer back to the evaluator box in the previous diagram. With local evaluation, that box sits inside the SDK runtime, which can be a backend service. With remote evaluation, that box sits at Amplitude and the caller fetches a result. Server-side code can use either mode. Explain that remote enrichment can use stored Analytics properties, while local evaluation needs the relevant inputs available locally or supported sync configuration. The static app will demonstrate remote evaluation; it does not benchmark a server SDK.",
           "cut": "",
@@ -77,7 +85,7 @@
         },
         {
           "title": "Caches have different jobs",
-          "minutes": 2,
+          "minutes": 1,
           "body": "<div class=\"grid c3\"><div class=\"card\"><span class=\"tag\">SDK</span><h3>Stored decisions</h3><p>Used by variant reads until the app fetches again.</p></div><div class=\"card\"><span class=\"tag\">Delivery</span><h3>CDN cache</h3><p>Amortises remote requests. Flag changes invalidate deployment caches.</p></div><div class=\"card\"><span class=\"tag\">Local SDK</span><h3>Flag configuration</h3><p>Refresh rules separately from request-time evaluation.</p></div></div><p class=\"caption\">A changed rule still needs to reach the application. Test the whole rollback path.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/under-the-hood/performance-and-caching\">Performance and caching</a></p>",
           "notes": "Explain that browser cached reads are different from CDN response caches. Do not promise instantaneous rollback everywhere. In this app the attendee must click Evaluate flags after editing a remote flag. Polling, startup and refresh behavior depend on the chosen SDK and integration.",
           "cut": "",
@@ -93,7 +101,7 @@
         },
         {
           "title": "Rollout and rollback need observation",
-          "minutes": 2,
+          "minutes": 1,
           "body": "<div class=\"flow\"><div class=\"node\">Release<small>Start with QA or an eligible segment</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Ramp<small>Increase allocation; watch guardrails</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Rollback<small>Disable, refresh, verify the default</small></div></div><p class=\"deck\">Track errors, rail load time and engagement alongside the rollout.</p>",
           "notes": "Discuss a staged 1%, 10%, 50%, 100% release as an example, not an automatic policy. Verify consistent identities. Reducing allocation and disabling a flag are different actions. A flag controls the new path; it is not content authorisation.",
           "cut": "",
@@ -114,8 +122,16 @@
           "exercise": false
         },
         {
+          "title": "Keys kept outside the browser",
+          "minutes": 1,
+          "exercise": false,
+          "body": "<div class=\"grid c3\"><div class=\"card\"><span class=\"tag\">Server deployment key</span><h3>Evaluate in a backend</h3><p>Used by server SDKs or the runtime evaluation REST API.</p></div><div class=\"card\"><span class=\"tag\">Management API key</span><h3>Change flag configuration</h3><p>Used by scripts or CI to create, edit and disable flags.</p></div><div class=\"card\"><span class=\"tag\">Analytics secret key</span><h3>Access protected data APIs</h3><p>Separate from flag delivery and not used by this workshop app.</p></div></div><p class=\"caption\">These are secret credentials. Keep them in trusted server or presenter environments.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/apis/keys-and-tokens\">Keys and Tokens</a></p>",
+          "notes": "Before showing the API calls, separate reading runtime decisions from changing configuration. Say: \u201cA backend uses a server deployment key to evaluate flags. A CI script uses a management API key to change the flag itself. These keys do different jobs and must stay out of a browser.\u201d The Analytics project secret key belongs to protected Analytics APIs and is another separate credential. None of these three secrets is configured in the static workshop app. The browser\u2019s client deployment key cannot substitute for the management key in the create or disable examples. Project IDs, flag IDs, flag keys and deployment names are identifiers; a privileged API operation still needs its own authorised credential.",
+          "cut": "Keep the runtime-versus-management distinction; direct detailed questions to the key reference."
+        },
+        {
           "title": "Manage configuration programmatically",
-          "minutes": 3,
+          "minutes": 2,
           "body": "<pre class=\"code\">GET   /api/1/flags?projectId=896821\nPOST  /api/1/flags\nPATCH /api/1/flags/{flagId}\n      {\"enabled\": false}</pre><p class=\"deck\">Management API: configuration changes.<br>SDK / evaluation API: runtime decisions.</p><p class=\"caption\">Presenter examples use management credentials outside the static site.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/apis/experiment/experiment-management-api-flags\">Management API flag endpoints</a></p>",
           "notes": "Open api-examples.html. Walk through a list, create and disable call. The create example associates a flag with a deployment but leaves activation to an explicit step. Management API access requires a separate management key, not either browser key. Runtime REST examples require a server deployment key. No participant runs these privileged calls.",
           "cut": "Cut point: show the list and disable calls only; the full examples remain in the guide.",

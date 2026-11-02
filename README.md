@@ -1,6 +1,6 @@
 # Sky NZ · Amplitude Feature Flags workshop
 
-90-minute workshop for a mixed technical/product audience. Ready-made static streaming app, 23-slide presenter deck, timed notes, participant guide and API examples.
+90-minute workshop for a mixed technical/product audience. Ready-made static streaming app, 25-slide presenter deck, timed notes, participant guide and API examples.
 
 ## Preview
 
