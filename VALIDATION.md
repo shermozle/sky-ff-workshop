@@ -61,3 +61,10 @@ Organisation ID: 74301. Project name: Feature Flag workshop. The numeric project
 - Architecture/delivery follows; the first app demonstration is at minute 25. Core exercises remain minutes 30–65.
 - Updated presenter notes, demo-script introduction, hub agenda and participant setup text.
 - Browser integration, slide fit/navigation/print and local-link/mobile checks passed. Evaluation diagram visually inspected.
+
+## Consistent viewer selection
+
+- Dropdown selections now automatically evaluate flags on every viewer change, including repeat visits, matching Next viewer.
+- Regression tests switch back and forth through on/off viewers in practice and real-SDK intercepted live modes without clicking Evaluate.
+- Live tests assert exactly one fetch per selection and the selected identity in every request; failed automatic fetches use the default and discard the old identity.
+- Explicit Evaluate remains available for refreshing an unchanged viewer after editing rules or other inputs.

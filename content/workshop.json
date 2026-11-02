@@ -131,7 +131,7 @@
           "title": "See the decision in the streaming app",
           "minutes": 2,
           "body": "<ol class=\"steps\"><li>Use the live <code>presenter-recommendations</code> flag.</li><li>Evaluate Aroha: high engagement selects the new rail.</li><li>Evaluate Casey: low engagement selects the default rail.</li></ol><p class=\"caption\">Same application code; different viewer context; different result.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
-          "notes": "This is the first app demonstration, after 25 minutes of explanation. Open the live presenter scenario with explicit properties and the high-engagement rule active. Select Aroha and evaluate, then Casey and evaluate. Connect each observed result to the evaluator diagram. Keep this to two minutes so participants have time to open their own workspaces. Save the identity-only demonstration and rollback for the relevant stations; the separate app-demo script provides the longer spoken walkthrough.",
+          "notes": "This is the first app demonstration, after 25 minutes of explanation. Open the live presenter scenario with explicit properties and the high-engagement rule active. Evaluate Aroha, then select Casey and wait for automatic evaluation. Connect each observed result to the evaluator diagram. Keep this to two minutes so participants have time to open their own workspaces. Save the identity-only demonstration and rollback for the relevant stations; the separate app-demo script provides the longer spoken walkthrough.",
           "cut": "Show Aroha and Casey only; move to participant setup at minute 27.",
           "exercise": false
         },

@@ -193,9 +193,16 @@
     log(`Preview selected: ${title} · ${current.userId}. Fictional content; no video playback.`);
     void analytics('Demo Content Previewed', { title, rail_flag: current.flag, rail_variant: current.lookup(current.flag).value, workshop_dataset: 'sky-ff-v1' }, current);
   }
-  fields.forEach(id => $(id).addEventListener(id === 'rollout' ? 'input' : 'change', () => { if (!busy) { invalidate(); sync(); } }));
+  fields.forEach(id => $(id).addEventListener(id === 'rollout' ? 'input' : 'change', () => {
+    if (busy) return;
+    if (id === 'profile') {
+      // Every viewer selection starts a fresh evaluation, including revisits.
+      // evaluate() clears the previous identity and applies the selected viewer.
+      void evaluate();
+    } else { invalidate(); sync(); }
+  }));
   $('evaluate').addEventListener('click', evaluate);
-  $('next-user').addEventListener('click', () => { if (busy) return; $('profile').selectedIndex = ($('profile').selectedIndex + 1) % profiles.length; sync(); void evaluate(); });
+  $('next-user').addEventListener('click', () => { if (busy) return; $('profile').selectedIndex = ($('profile').selectedIndex + 1) % profiles.length; void evaluate(); });
   $('rollback').addEventListener('click', () => { if (busy || $('mode').value !== 'practice') return; $('enabled').checked = false; sync(); void evaluate(); });
   $('cached').addEventListener('click', () => { if (!current || busy) return; const start = performance.now(); const variant = current.lookup(current.flag); const elapsed = performance.now() - start; log(`Cached variant('${current.flag}') → ${variant.value || 'off'} in ${elapsed.toFixed(3)} ms; no fetch. This reads a stored decision, not a local rule evaluation.`); status('Read the last decision without fetching. Use Evaluate flags after changing a live rule.'); });
   $('copy').addEventListener('click', async () => {

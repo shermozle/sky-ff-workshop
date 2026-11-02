@@ -33,10 +33,15 @@ async function main() {
     assert.equal(await page.locator('#rail-title').innerText(), 'Picked for Aroha');
     await page.selectOption('#target', 'Sky Sport'); await page.click('#evaluate');
     assert.equal(await page.locator('#rail-title').innerText(), 'Picked for Aroha');
-    await page.selectOption('#profile', 'sky-workshop-ben'); await page.click('#evaluate');
+    await page.selectOption('#profile', 'sky-workshop-ben');
     assert.equal(await page.locator('#rail-title').innerText(), 'Popular this week');
-    await page.selectOption('#profile', 'sky-workshop-dev'); await page.click('#evaluate');
+    await page.selectOption('#profile', 'sky-workshop-dev');
     assert.equal(await page.locator('#rail-title').innerText(), 'Picked for Dev');
+    // Revisit viewers without pressing Evaluate: the selector must be consistent.
+    for (const [id, title] of [['ben', 'Popular this week'], ['aroha', 'Picked for Aroha'], ['ben', 'Popular this week'], ['dev', 'Picked for Dev']]) {
+      await page.selectOption('#profile', `sky-workshop-${id}`);
+      assert.equal(await page.locator('#rail-title').innerText(), title, `Practice revisit: ${id}`);
+    }
     await page.click('#rollback');
     assert.equal(await page.locator('#rail-title').innerText(), 'Popular this week');
     await page.check('#enabled'); await page.fill('#flag', 'alex-recommendations'); await page.fill('#promo', 'alex-promo');
@@ -73,8 +78,7 @@ async function main() {
     });
     await page.route('https://api2.amplitude.com/**', async route => { analytics.push(route.request().postDataJSON()); return route.fulfill({ status: 200, contentType: 'application/json', body: '{"code":200,"events_ingested":1}' }); });
     await page.fill('#deployment', 'test-public-client-key'); await page.fill('#api-key', 'test-analytics-key'); await page.check('#track'); await page.click('#save-connection');
-    await page.selectOption('#profile', 'sky-workshop-aroha'); await page.selectOption('#input-mode', 'explicit');
-    await page.click('#evaluate'); await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Live decision applied'));
+    await page.selectOption('#input-mode', 'explicit'); await page.selectOption('#profile', 'sky-workshop-aroha'); await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Live decision applied'));
     assert.equal(await page.locator('#rail-title').innerText(), 'Picked for Aroha');
     assert.equal(requests.at(-1).user.user_properties.subscription_packages[1], 'Sky Sport');
     assert.equal(requests.at(-1).headers.authorization, 'Api-Key test-public-client-key');
@@ -84,10 +88,18 @@ async function main() {
     const prior = requests.length; await page.click('#cached'); assert.equal(requests.length, prior, 'Real SDK cached read makes no network request');
     await page.selectOption('#profile', 'sky-workshop-casey');
     assert.equal(await page.locator('#rail-title').innerText(), 'Popular this week', 'Identity switch immediately clears old result');
-    await page.click('#evaluate'); await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Live decision applied'));
+    await page.waitForFunction(() => !document.querySelector('#evaluate').disabled);
     assert.equal(await page.locator('#rail-title').innerText(), 'Popular this week');
     assert.equal(requests.at(-1).user.user_id, 'sky-workshop-casey');
-    await page.selectOption('#profile', 'sky-workshop-ben'); slow = true; await page.click('#evaluate');
+    for (const [id, title] of [['aroha', 'Picked for Aroha'], ['casey', 'Popular this week'], ['aroha', 'Picked for Aroha'], ['casey', 'Popular this week']]) {
+      const countBefore = requests.length;
+      await page.selectOption('#profile', `sky-workshop-${id}`);
+      await page.waitForFunction(() => !document.querySelector('#evaluate').disabled);
+      assert.equal(requests.length, countBefore + 1, 'Exactly one automatic fetch per viewer selection');
+      assert.equal(requests.at(-1).user.user_id, `sky-workshop-${id}`);
+      assert.equal(await page.locator('#rail-title').innerText(), title, `Live revisit: ${id}`);
+    }
+    slow = true; await page.selectOption('#profile', 'sky-workshop-ben');
     await page.waitForFunction(() => document.querySelector('#evaluate').disabled);
     check(await page.locator('#profile').isDisabled(), 'Inputs cannot race a pending fetch');
     await page.waitForFunction(() => !document.querySelector('#evaluate').disabled); slow = false;
@@ -95,7 +107,7 @@ async function main() {
     await page.click('#watch'); await page.waitForFunction(() => document.querySelector('#log').textContent.includes('Analytics accepted: Demo Content Previewed'));
     check(analytics.some(p => p.events[0].event_type === '$exposure'), 'Exposure events use documented $exposure shape');
     check(analytics.some(p => p.events[0].user_id === 'sky-workshop-ben' && p.events[0].event_type === 'Demo Content Previewed'), 'Analytics identity matches evaluated viewer');
-    failure = true; await page.click('#evaluate'); await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Could not evaluate'));
+    failure = true; await page.selectOption('#profile', 'sky-workshop-aroha'); await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Could not evaluate'));
     assert.equal(await page.locator('#rail-title').innerText(), 'Popular this week');
     assert.equal(await page.locator('#result-badge').innerText(), 'Fetch failed');
     check(await page.locator('#cached').isDisabled(), 'Failed fetch does not leave a cached decision');
