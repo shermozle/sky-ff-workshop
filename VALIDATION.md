@@ -68,3 +68,11 @@ Organisation ID: 74301. Project name: Feature Flag workshop. The numeric project
 - Regression tests switch back and forth through on/off viewers in practice and real-SDK intercepted live modes without clicking Evaluate.
 - Live tests assert exactly one fetch per selection and the selected identity in every request; failed automatic fetches use the default and discard the old identity.
 - Explicit Evaluate remains available for refreshing an unchanged viewer after editing rules or other inputs.
+
+## Highlighted Analysis
+
+- Seed endpoint accepted all 350 synthetic records: 112 $exposure, 112 Demo Recommendation Rail Viewed, 77 Demo Content Previewed and 49 Demo Content Watched.
+- Five existing fictional profiles, seven days of illustrative history; no real viewer records or release configuration changed.
+- Configured the flag’s value moment as Demo Content Watched in Amplitude. The Highlighted Analysis frequency distribution and exposure diagnostics render data.
+- Reloaded the flag and confirmed the saved Edit events state and populated chart in the DOM. Screenshot retained locally in ignored artifacts/.
+- Presenter materials explicitly identify this as synthetic, targeted demo data rather than causal experiment results.

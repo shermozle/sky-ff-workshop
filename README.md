@@ -69,3 +69,9 @@ Public repository: https://github.com/shermozle/sky-ff-workshop
 Workshop hub: https://shermozle.github.io/sky-ff-workshop/
 
 Slides have keyboard navigation, full screen, section jump menu, section-aware timer and print-to-PDF styles. The app has visible practice/live status, default paths on missing/error results and URL-persisted synthetic identities. Runtime public keys are stored locally and intentionally excluded from copied scenario URLs.
+
+## Presenter Highlighted Analysis
+
+`presenter-recommendations` is configured with `Demo Content Watched` as the value moment. The authorised seed run added 112 labelled synthetic exposures and 238 viewing events for the five fictional viewers over a seven-day history. These are illustrative data, not measured uplift.
+
+`node scripts/seed-flag-analysis.cjs` prints a dry run. `--send` uploads the fixtures using the approved public Analytics configuration, with a guard for project 896821. Data is tagged `sky-highlighted-v1` and `synthetic: true`; insert IDs prevent duplicate replay of the same dated fixture.
