@@ -1,0 +1,582 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sky NZ · Amplitude Feature Flags</title>
+
+
+
+
+
+
+<style>
+:root {
+  --ground:   #0A0D13;
+  --panel:    #141A25;
+  --line:     #262F3D;
+  --line-hi:  #38445A;
+  --text:     #F0F3F8;
+  --dim:      #94A0B3;
+  --faint:    #636E80;
+
+  --accent:   #5B8DFF;   /* structure */
+  --signal:   #2FD9AE;   /* live, verified, "watch this" */
+  --action:   #FFA24C;   /* your turn — exercises */
+  --action-ink:#33210D;
+
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --disp: "Archivo", var(--sans);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--ground); color: var(--text);
+  font-family: var(--sans); overflow: hidden;
+}
+
+#viewport {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ground);
+}
+#stage {
+  width: 1280px; height: 720px;
+  position: relative; transform-origin: center center; flex: none;
+}
+
+.slide {
+  position: absolute; inset: 0;
+  padding: 54px 72px 76px;
+  display: none; flex-direction: column;
+  background: var(--ground);
+}
+.slide.on { display: flex; }
+.body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+
+/* ---------- furniture ---------- */
+
+.eyebrow {
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--faint);
+  display: flex; align-items: center; gap: 12px; flex: none;
+}
+.eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
+.eyebrow .mins { margin-left: auto; letter-spacing: .1em; }
+
+h1.cover-title {
+  font-family: var(--disp);
+  font-variation-settings: "wdth" 112, "wght" 800;
+  font-size: 92px; line-height: .98; letter-spacing: -.035em; margin: 0; max-width: 22ch;
+}
+h2.head {
+  font-family: var(--disp);
+  font-variation-settings: "wdth" 104, "wght" 750;
+  font-size: 40px; line-height: 1.08; letter-spacing: -.022em;
+  margin: 18px 0 0; text-wrap: balance; max-width: 30ch;
+}
+p.deck { font-size: 21px; line-height: 1.45; color: var(--dim); font-weight: 300; margin: 16px 0 0; max-width: 62ch; }
+p.deck strong { color: var(--text); font-weight: 500; }
+.kicker {
+  font-family: var(--mono); font-size: 13px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--signal); margin: 0 0 6px;
+}
+.caption { margin: 14px 0 0; font-size: 15.5px; color: var(--faint); font-weight: 300; max-width: 82ch; line-height: 1.45; }
+.caption b { color: var(--dim); font-weight: 500; }
+
+/* ---------- section divider ---------- */
+
+.act-num {
+  font-family: var(--disp);
+  font-variation-settings: "wdth" 125, "wght" 800;
+  font-size: 132px; line-height: .8; margin: 0;
+  color: transparent; -webkit-text-stroke: 2px var(--line-hi); letter-spacing: -.04em;
+}
+.act-slide h1 {
+  font-family: var(--disp);
+  font-variation-settings: "wdth" 110, "wght" 800;
+  font-size: 72px; line-height: 1; letter-spacing: -.032em; margin: 6px 0 0;
+}
+.contains { margin: 30px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 10px; max-width: 56ch; }
+.contains li {
+  font-family: var(--mono); font-size: 13px; color: var(--dim);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px;
+}
+
+/* ---------- rows (term / definition) ---------- */
+
+.rows { margin: 24px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.rows li {
+  display: grid; grid-template-columns: 210px minmax(0, 1fr);
+  gap: 22px; align-items: baseline;
+  padding: 13px 2px; border-bottom: 1px solid var(--line);
+}
+.rows li:first-child { border-top: 1px solid var(--line); }
+.rows .term { font-family: var(--disp); font-variation-settings: "wdth" 100, "wght" 700; font-size: 19px; }
+.rows .term.mono { font-family: var(--mono); font-size: 15px; font-variation-settings: normal; color: var(--signal); }
+.rows .def { font-size: 16.5px; line-height: 1.45; color: var(--dim); font-weight: 300; }
+.rows .def strong { color: var(--text); font-weight: 500; }
+/* NOTE: .rows li is a grid whose *direct children* are exactly two spans, so
+   inline markup nested inside them is safe. Never make a list item a grid
+   container when its inline children (<strong>, <code>) are direct children —
+   grid promotes each to its own cell and the text overlaps. See .steps below. */
+
+/* ---------- cards ---------- */
+
+.grid { display: grid; gap: 16px; margin-top: 26px; }
+.grid.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 19px 20px 21px; display: flex; flex-direction: column; gap: 7px; min-width: 0;
+}
+.card .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.card.signal .tag { color: var(--signal); }
+.card.action .tag { color: var(--action); }
+.card h3 { font-family: var(--disp); font-variation-settings: "wdth" 100, "wght" 700; font-size: 21px; line-height: 1.15; margin: 0; }
+.card p { margin: 0; font-size: 15.5px; line-height: 1.45; color: var(--dim); font-weight: 300; }
+
+/* ---------- code ---------- */
+
+pre.code {
+  margin: 22px 0 0; background: var(--panel);
+  border: 1px solid var(--line); border-left: 3px solid var(--signal); border-radius: 10px;
+  padding: 20px 22px; font-family: var(--mono); font-size: 16px; line-height: 1.62;
+  color: var(--text); overflow-x: auto; white-space: pre; tab-size: 2;
+}
+pre.code .c { color: var(--faint); }
+pre.code .s { color: var(--signal); }
+pre.code .k { color: var(--accent); }
+pre.code .hl { color: var(--action); }
+
+/* ---------- exercise slides ---------- */
+
+.slide.ex { background: linear-gradient(180deg, #12100C 0%, var(--ground) 62%); }
+.slide.ex .eyebrow .dot { background: var(--action); }
+.station { display: flex; align-items: baseline; gap: 16px; margin-top: 18px; }
+.station .snum {
+  font-family: var(--disp); font-variation-settings: "wdth" 118, "wght" 800;
+  font-size: 46px; line-height: 1; color: var(--action); flex: none;
+}
+.station h2 { font-family: var(--disp); font-variation-settings: "wdth" 104, "wght" 750; font-size: 40px; margin: 0; }
+
+/* Block li with an absolutely positioned marker — NOT display:grid, which
+   would put every nested <strong> and <code> in its own cell. */
+.steps { margin: 24px 0 0; padding: 0; list-style: none; counter-reset: st; display: flex; flex-direction: column; gap: 13px; }
+.steps li {
+  position: relative; padding-left: 42px;
+  font-size: 18.5px; line-height: 1.44; color: var(--dim); font-weight: 300;
+}
+.steps li::before {
+  counter-increment: st; content: counter(st);
+  position: absolute; left: 0; top: 3px; width: 26px; padding: 3px 0;
+  font-family: var(--mono); font-size: 13px; color: var(--action);
+  border: 1px solid var(--action-ink); background: var(--action-ink);
+  border-radius: 6px; text-align: center;
+}
+.steps li strong { color: var(--text); font-weight: 500; }
+.steps li .aside { display: block; font-size: 15px; color: var(--faint); margin-top: 3px; }
+
+.pill-row { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.pill {
+  font-family: var(--mono); font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 7px 13px; border-radius: 999px; border: 1px solid var(--line); color: var(--dim);
+}
+.pill.hot { border-color: var(--action); color: var(--action); }
+
+/* ---------- URL callout ---------- */
+
+.urlbox {
+  margin-top: 26px; border: 1px solid var(--signal); background: #0C2C26;
+  border-radius: 12px; padding: 18px 24px;
+  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+}
+.urlbox .lbl { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); flex: none; }
+.urlbox .u { font-family: var(--mono); font-size: 30px; color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+
+/* ---------- rail ---------- */
+
+#rail {
+  position: absolute; left: 72px; right: 72px; bottom: 28px;
+  display: flex; align-items: flex-end; gap: 3px; height: 22px; pointer-events: none;
+}
+#rail .tick { flex: 1 1 auto; height: 3px; background: var(--line); border-radius: 1px; transition: height .18s ease, background .18s ease; }
+#rail .tick.seen { background: var(--line-hi); }
+#rail .tick.now { height: 13px; background: var(--signal); }
+#rail .tick.gap { flex: 0 0 12px; background: transparent; }
+
+#stamp {
+  position: absolute; right: 72px; bottom: 54px;
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em;
+  color: var(--faint); font-variant-numeric: tabular-nums; pointer-events: none;
+}
+
+/* ---------- full-screen button ---------- */
+
+#fsbtn {
+  position: fixed; top: 14px; left: 16px; z-index: 40;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 11px; color: var(--dim); cursor: pointer;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  opacity: .38; transition: opacity .18s ease, color .18s ease, border-color .18s ease;
+}
+#fsbtn:hover { opacity: 1; color: var(--text); border-color: var(--line-hi); }
+#fsbtn:focus-visible { opacity: 1; outline: 2px solid var(--signal); outline-offset: 2px; }
+#fsbtn svg { width: 13px; height: 13px; flex: none; }
+#fsbtn .exit { display: none; }
+body.isfull #fsbtn .enter { display: none; }
+body.isfull #fsbtn .exit { display: block; }
+
+/* ---------- timer ---------- */
+
+#timer {
+  position: fixed; top: 14px; right: 16px; z-index: 40;
+  font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 12px; color: var(--dim);
+  display: none; gap: 12px; align-items: center; font-variant-numeric: tabular-nums;
+}
+#timer.on { display: flex; }
+#timer .clock { color: var(--text); font-size: 14px; font-weight: 600; }
+#timer.ahead .delta { color: var(--signal); }
+#timer.late .delta { color: #FF7A85; }
+
+/* ---------- jump menu ---------- */
+
+#jump { position: fixed; inset: 0; z-index: 60; background: #06080C; display: none; padding: 40px 48px; overflow-y: auto; }
+#jump.on { display: block; }
+#jump h2 { font-family: var(--disp); font-variation-settings: "wdth" 108, "wght" 800; font-size: 26px; margin: 0 0 4px; }
+#jump .hint { font-family: var(--mono); font-size: 11.5px; color: var(--faint); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 26px; }
+#jump .acts { columns: 3; column-gap: 40px; }
+@media (max-width: 1000px) { #jump .acts { columns: 2; } }
+#jump .act-grp { break-inside: avoid; margin-bottom: 24px; }
+#jump .act-grp h3 {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--signal); margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+#jump ol { list-style: none; margin: 0; padding: 0; }
+#jump button {
+  display: flex; gap: 10px; width: 100%; background: none; border: 0; cursor: pointer;
+  text-align: left; padding: 5px 7px; border-radius: 6px;
+  font-family: var(--sans); font-size: 14px; color: var(--dim); align-items: baseline;
+}
+#jump button:hover { background: var(--panel); color: var(--text); }
+#jump button.cur { color: var(--signal); }
+#jump button .n { font-family: var(--mono); font-size: 11px; color: var(--faint); min-width: 20px; font-variant-numeric: tabular-nums; }
+
+#help { position: fixed; inset: 0; z-index: 70; background: #06080C; display: none; align-items: center; justify-content: center; }
+#help.on { display: flex; }
+#help h2 { font-family: var(--disp); font-variation-settings: "wdth" 108, "wght" 800; font-size: 28px; margin: 0 0 20px; }
+#help dl { display: grid; grid-template-columns: auto 1fr; gap: 11px 20px; margin: 0; font-size: 15px; max-width: 520px; }
+#help dt { font-family: var(--mono); font-size: 13px; color: var(--signal); }
+#help dd { margin: 0; color: var(--dim); font-weight: 300; }
+
+#nudge {
+  position: fixed; bottom: 14px; left: 16px; z-index: 30;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+  color: var(--faint); opacity: .55; transition: opacity .4s ease;
+}
+#nudge.hide { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) { #rail .tick, #nudge, #fsbtn { transition: none; } }
+
+/* ---------- print / PDF fallback ---------- */
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { overflow: visible; height: auto; background: #fff; }
+  #viewport { position: static; display: block; }
+  #stage { width: 1280px; height: auto; transform: none !important; }
+  .slide { position: static; display: flex !important; width: 1280px; height: 720px; page-break-after: always; }
+  #timer, #jump, #help, #nudge, #fsbtn { display: none !important; }
+}
+</style><style>:root{--sans:system-ui,-apple-system,"Segoe UI",sans-serif;--disp:var(--sans);--mono:ui-monospace,SFMono-Regular,Menlo,monospace;--accent:#6da9ff;--signal:#71dbcc;--faint:#9caec7}h2.head{font-size:44px;max-width:38ch}.card h3{font-size:25px}.card p{font-size:21px;line-height:1.5}.rows .term{font-size:23px}.rows .def{font-size:22px}.rows li{grid-template-columns:230px 1fr;padding:15px 2px}.caption{font-size:18px;color:#adbbcf}.steps li{font-size:24px}.urlbox a{color:#90bcff;font:23px var(--mono);overflow-wrap:anywhere}.flow{display:flex;align-items:stretch;gap:16px;margin-top:32px}.flow .node{flex:1;padding:23px 20px;border:1px solid #486183;border-radius:10px;background:#152237;font-size:25px;font-weight:650}.flow .node small{display:block;font-size:19px;color:#adbbcf;font-weight:400;margin-top:14px}.flow .arrow{align-self:center;color:#71dbcc;font-size:30px}.compare{border-collapse:collapse;width:100%;margin-top:26px;font-size:23px}.compare td,.compare th{text-align:left;padding:15px 16px;border-bottom:1px solid #34435c}.compare th{color:#8cb7ef}.compare td{color:#d3ddeb}.pill-row .pill{font-size:18px}.source{font-size:14px;margin-top:17px;color:#a5b7d0}.source a{color:#a5b7d0}.code{font-size:22px!important;line-height:1.5!important}h2.head{margin-bottom:12px}.big{font-size:29px;line-height:1.6;color:#becce0;max-width:1000px}#stamp{color:#afbdd0}#jump h3{color:#b8c7dd}.urlbox{padding:16px 20px!important;margin-top:22px!important}</style>
+
+</head><body><div id="viewport">
+  <div id="stage">
+
+<section class="slide " data-act="0" data-title="Feature flags for Sky NZ"><div class="eyebrow"><span class="dot"></span>Sky NZ / Opening demo<span class="mins">00–02 min</span></div><div class="body"><h2 class="head">Feature flags for Sky NZ</h2><p class="big">Control recommendations and content promotions.<br>Choose who sees a change, then roll it back.</p><div class="grid c2"><div class="card"><span class="tag">90 minutes</span><h3>Configure, observe, discuss</h3><p>Use a ready-made app and five fictional viewers.</p></div><div class="card"><span class="tag">Today’s scope</span><h3>A static streaming prototype</h3><p>Live mode calls Amplitude directly. Backend placement is an architecture discussion.</p></div></div></div></section>
+<section class="slide " data-act="0" data-title="Watch a rollout change the rail"><div class="eyebrow"><span class="dot"></span>Sky NZ / Opening demo<span class="mins">02–05 min</span></div><div class="body"><h2 class="head">Watch a rollout change the rail</h2><ol class="steps"><li>Switch from Aroha to Ben. Compare their subscriptions.</li><li>Target Sky Sport, evaluate, then switch viewers again.</li><li>Disable the practice flag and return to the default rail.</li></ol><div class="pill-row"><span class="pill hot">Done when: the room can explain who saw the new rail</span></div><div class="urlbox"><a class="workshop-url" href="index.html">Open workshop hub ↗</a></div></div></section>
+<section class="slide " data-act="1" data-title="A flag is a runtime decision"><div class="eyebrow"><span class="dot"></span>Sky NZ / How flags work<span class="mins">05–07 min</span></div><div class="body"><h2 class="head">A flag is a runtime decision</h2><div class="flow"><div class="node">Application code<small>Two supported experiences</small></div><span class="arrow">→</span><div class="node">Flag decision<small>A key resolves to a variant</small></div><span class="arrow">→</span><div class="node">User experience<small>Render the selected path</small></div></div><p class="deck">The application must already contain the new behavior and a working default.</p></div></section>
+<section class="slide " data-act="1" data-title="Configuration and evaluation are separate"><div class="eyebrow"><span class="dot"></span>Sky NZ / How flags work<span class="mins">07–09 min</span></div><div class="body"><h2 class="head">Configuration and evaluation are separate</h2><div class="flow"><div class="node">Control plane<small>Create rules, variants and rollout</small></div><span class="arrow">→</span><div class="node">Delivery + SDK<small>Retrieve configuration or decisions</small></div><span class="arrow">→</span><div class="node">Application<small>Use the result at the decision point</small></div></div><p class="source">Source: <a href="https://amplitude.com/docs/feature-experiment/experiment-quick-start">Experiment quick start</a></p></div></section>
+<section class="slide " data-act="1" data-title="Local and remote evaluation"><div class="eyebrow"><span class="dot"></span>Sky NZ / How flags work<span class="mins">09–12 min</span></div><div class="body"><h2 class="head">Local and remote evaluation</h2><table class="compare"><tr><th></th><th>Local evaluation</th><th>Remote evaluation</th></tr><tr><td>Decision happens</td><td>Inside the SDK runtime</td><td>At Amplitude</td></tr><tr><td>Decision inputs</td><td>Locally available user data</td><td>Request data + supported enrichment</td></tr><tr><td>Network on decision path</td><td>No, after configuration loads</td><td>Yes, when fetching a decision</td></tr></table><p class="caption">Server-side code can use either mode. Remote does not mean browser-only.</p><p class="source">Source: <a href="https://amplitude.com/docs/feature-experiment/remote-evaluation">Remote evaluation</a></p></div></section>
+<section class="slide " data-act="1" data-title="Three operations, three timings"><div class="eyebrow"><span class="dot"></span>Sky NZ / How flags work<span class="mins">12–14 min</span></div><div class="body"><h2 class="head">Three operations, three timings</h2><div class="grid c3"><div class="card"><span class="tag">1</span><h3>Fetch a decision</h3><p>Network round trip plus service and SDK work.</p></div><div class="card"><span class="tag">2</span><h3>Read a cached variant</h3><p>Read an already fetched decision. No rule evaluation is implied.</p></div><div class="card"><span class="tag">3</span><h3>Evaluate locally</h3><p>Run rules against a user and cached configuration.</p></div></div><p class="caption">A quick cached read does not measure remote evaluation latency.</p></div></section>
+<section class="slide " data-act="1" data-title="Caches have different jobs"><div class="eyebrow"><span class="dot"></span>Sky NZ / How flags work<span class="mins">14–16 min</span></div><div class="body"><h2 class="head">Caches have different jobs</h2><div class="grid c3"><div class="card"><span class="tag">SDK</span><h3>Stored decisions</h3><p>Used by variant reads until the app fetches again.</p></div><div class="card"><span class="tag">Delivery</span><h3>CDN cache</h3><p>Amortises remote requests. Flag changes invalidate deployment caches.</p></div><div class="card"><span class="tag">Local SDK</span><h3>Flag configuration</h3><p>Refresh rules separately from request-time evaluation.</p></div></div><p class="caption">A changed rule still needs to reach the application. Test the whole rollback path.</p><p class="source">Source: <a href="https://amplitude.com/docs/feature-experiment/under-the-hood/performance-and-caching">Performance and caching</a></p></div></section>
+<section class="slide " data-act="1" data-title="Design latency and failure behavior"><div class="eyebrow"><span class="dot"></span>Sky NZ / How flags work<span class="mins">16–18 min</span></div><div class="body"><h2 class="head">Design latency and failure behavior</h2><ol class="steps"><li>Choose a refresh strategy and a time budget.</li><li>Serve an intentional default when evaluation is unavailable.</li><li>Measure from Sky’s actual runtime and network location.</li></ol><div class="pill-row"><span class="pill hot">Done when: there is an owner for defaults and refresh behavior</span></div><p class="caption">Seed historical profiles before the session. Property enrichment can lag profile updates.</p></div></section>
+<section class="slide " data-act="1" data-title="Rollout and rollback need observation"><div class="eyebrow"><span class="dot"></span>Sky NZ / How flags work<span class="mins">18–20 min</span></div><div class="body"><h2 class="head">Rollout and rollback need observation</h2><div class="flow"><div class="node">Release<small>Start with QA or an eligible segment</small></div><span class="arrow">→</span><div class="node">Ramp<small>Increase allocation; watch guardrails</small></div><span class="arrow">→</span><div class="node">Rollback<small>Disable, refresh, verify the default</small></div></div><p class="deck">Track errors, rail load time and engagement alongside the rollout.</p></div></section>
+<section class="slide " data-act="2" data-title="Flags and experiments share delivery"><div class="eyebrow"><span class="dot"></span>Sky NZ / Experiments and APIs<span class="mins">20–22 min</span></div><div class="body"><h2 class="head">Flags and experiments share delivery</h2><div class="grid c2"><div class="card"><span class="tag">Feature flag</span><h3>Who receives a release?</h3><p>Targeting, variants, assignment and rollout controls.</p></div><div class="card"><span class="tag">Experiment</span><h3>What effect did it have?</h3><p>A hypothesis, exposure measurement, success metrics and analysis.</p></div></div><p class="source">Source: <a href="https://amplitude.com/docs/feature-experiment/data-model">Data model</a></p></div></section>
+<section class="slide " data-act="2" data-title="Manage configuration programmatically"><div class="eyebrow"><span class="dot"></span>Sky NZ / Experiments and APIs<span class="mins">22–25 min</span></div><div class="body"><h2 class="head">Manage configuration programmatically</h2><pre class="code">GET   /api/1/flags?projectId=74301
+POST  /api/1/flags
+PATCH /api/1/flags/{flagId}
+      {"enabled": false}</pre><p class="deck">Management API: configuration changes.<br>SDK / evaluation API: runtime decisions.</p><p class="caption">Presenter examples use management credentials outside the static site.</p><p class="source">Source: <a href="https://amplitude.com/docs/apis/experiment/experiment-management-api-flags">Management API flag endpoints</a></p></div></section>
+<section class="slide ex" data-act="3" data-title="Open your workshop workspace"><div class="eyebrow"><span class="dot"></span>Sky NZ / Hands-on setup<span class="mins">25–30 min</span></div><div class="body"><h2 class="head">Open your workshop workspace</h2><ol class="steps"><li>Open the app and exercise guide from the hub.</li><li>Select Live once the presenter has configured the deployment.</li><li>Choose a unique prefix: <code>alex-recommendations</code>.</li><li>Use project 74301 and the shared web client deployment.</li></ol><div class="pill-row"><span class="pill hot">Done when: you can find the project, app and viewer selector</span></div><div class="urlbox"><a class="workshop-url" href="index.html">Open workshop hub ↗</a></div></div></section>
+<section class="slide ex" data-act="4" data-title="1 / Create your recommendation flag"><div class="eyebrow"><span class="dot"></span>Sky NZ / Station 1 · Create and target<span class="mins">30–42 min</span></div><div class="body"><h2 class="head">1 / Create your recommendation flag</h2><ol class="steps"><li>Create a remote-evaluation flag with your unique key and an <code>on</code> variant.</li><li>Attach the workshop web deployment and activate at 100%.</li><li>Paste the key into the app and evaluate.</li><li>Target <code>subscription_packages</code> containing <code>Sky Sport</code>; leave other users off.</li><li>Compare Aroha, Ben and Dev.</li></ol><div class="pill-row"><span class="pill hot">Done when: Aroha and Dev see the new rail; Ben sees the default</span></div><p class="caption">Use identity + profile properties for this station. Incognito alone does not change identity.</p><div class="urlbox"><a class="workshop-url" href="index.html">Open workshop hub ↗</a></div></div></section>
+<section class="slide ex" data-act="5" data-title="2 / Test identity and release scope"><div class="eyebrow"><span class="dot"></span>Sky NZ / Station 2 · Rollout and rollback<span class="mins">42–52 min</span></div><div class="body"><h2 class="head">2 / Test identity and release scope</h2><ol class="steps"><li>Remove the subscription rule; set an all-user rollout to 50%.</li><li>Compare all five viewers, then re-evaluate the same viewer.</li><li>Copy the scenario URL into Incognito; keep the identity unchanged.</li><li>Switch the selected viewer to test another identity.</li><li>Disable the flag in Amplitude and evaluate again.</li></ol><div class="pill-row"><span class="pill hot">Done when: the new rail disappears after rollback and refresh</span></div><p class="caption">Five viewers may not split evenly at 50%. Flag keys are in the URL; connection keys are not.</p></div></section>
+<section class="slide ex" data-act="6" data-title="3 / Use what Amplitude knows"><div class="eyebrow"><span class="dot"></span>Sky NZ / Station 3 · Amplitude user data<span class="mins">52–65 min</span></div><div class="body"><h2 class="head">3 / Use what Amplitude knows</h2><ol class="steps"><li>Set <code>engagement_level = high</code> as the target at 100%; everyone else off.</li><li>Select “Send identity only” and evaluate Aroha and Casey.</li><li>Expand Request inputs: no profile properties are sent.</li><li>Inspect the seeded user profiles in Amplitude.</li><li>Explain where the request and the enrichment happen.</li></ol><div class="pill-row"><span class="pill hot">Done when: Aroha qualifies, Casey does not, with identity-only requests</span></div><p class="caption">The fixture panel shows expected data. Inspect Amplitude to verify the stored profile.</p></div></section>
+<section class="slide " data-act="7" data-title="Now / map the current decision path"><div class="eyebrow"><span class="dot"></span>Sky NZ / Architecture discussion<span class="mins">65–69 min</span></div><div class="body"><h2 class="head">Now / map the current decision path</h2><div class="flow"><div class="node">TV / streaming client<small>Where is the rail requested?</small></div><span class="arrow">→</span><div class="node">Sky backend<small>Where is the behavior selected?</small></div><span class="arrow">→</span><div class="node">User data<small>Which system owns each input?</small></div></div><p class="deck">Map one recommendation or promo request together.</p></div></section>
+<section class="slide " data-act="7" data-title="Next / introduce one backend flag"><div class="eyebrow"><span class="dot"></span>Sky NZ / Architecture discussion<span class="mins">69–73 min</span></div><div class="body"><h2 class="head">Next / introduce one backend flag</h2><div class="grid c3"><div class="card"><span class="tag">Decision point</span><h3>Recommendation service</h3><p>Choose one behavior with an owned default and rollback path.</p></div><div class="card"><span class="tag">Evaluation mode</span><h3>Choose per requirement</h3><p>Local for available inputs; remote when enrichment is needed.</p></div><div class="card"><span class="tag">Verification</span><h3>Observe the result</h3><p>Measure latency, error rate, exposure and user experience.</p></div></div><p class="caption">This is a proposal for discussion. The workshop app does not run a backend.</p></div></section>
+<section class="slide " data-act="7" data-title="Future / consistent delivery across platforms"><div class="eyebrow"><span class="dot"></span>Sky NZ / Architecture discussion<span class="mins">73–77 min</span></div><div class="body"><h2 class="head">Future / consistent delivery across platforms</h2><div class="grid c3"><div class="card"><span class="tag">SDKs</span><h3>Shared evaluation contracts</h3><p>Identity, defaults, variant types and refresh behavior.</p></div><div class="card"><span class="tag">Operations</span><h3>Owned flag lifecycles</h3><p>Permissions, CI integration, expiry and cleanup.</p></div><div class="card"><span class="tag">Measurement</span><h3>Connect release to outcomes</h3><p>Intentional exposure, guardrails and experiments.</p></div></div><p class="caption">Cross-platform consistency needs aligned identity, rules and bucketing; it is not automatic.</p></div></section>
+<section class="slide " data-act="8" data-title="Wave / standard demonstration"><div class="eyebrow"><span class="dot"></span>Sky NZ / Wave demonstration<span class="mins">77–85 min</span></div><div class="body"><h2 class="head">Wave / standard demonstration</h2><p class="big">Simon’s standard Wave demo.</p><p class="deck">Connect the demonstration to a question raised during the workshop, then return for questions.</p></div></section>
+<section class="slide ex" data-act="9" data-title="Questions and next steps"><div class="eyebrow"><span class="dot"></span>Sky NZ / Questions and buffer<span class="mins">85–90 min</span></div><div class="body"><h2 class="head">Questions and next steps</h2><ol class="steps"><li>Which backend decision is the first candidate?</li><li>Which evaluation mode fits its data and latency needs?</li><li>Who owns setup, verification and the rollback rehearsal?</li></ol><div class="pill-row"><span class="pill hot">Done when: there is a concrete next step</span></div><div class="urlbox"><a class="workshop-url" href="index.html">Open workshop hub ↗</a></div><p class="caption">Optional buffer station: create a second promo flag and copy a scenario containing both keys.</p></div></section>
+
+
+    <div id="rail" aria-hidden="true"></div>
+    <div id="stamp"></div>
+  </div>
+</div>
+
+<button id="fsbtn" type="button" aria-label="Toggle full screen">
+  <svg class="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+    <path d="M1.5 5.5v-4h4M14.5 5.5v-4h-4M1.5 10.5v4h4M14.5 10.5v4h-4"/>
+  </svg>
+  <svg class="exit" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+    <path d="M5.5 1.5v4h-4M10.5 1.5v4h4M5.5 14.5v-4h-4M10.5 14.5v-4h4"/>
+  </svg>
+  <span class="label">Full screen</span>
+</button>
+
+<div id="timer" aria-live="off">
+  <span class="clock">00:00</span><span class="plan"></span><span class="delta"></span>
+</div>
+
+<div id="jump" role="dialog" aria-label="Jump to slide">
+  <h2>Jump to</h2>
+  <p class="hint">Click a slide · Esc to close</p>
+  <div class="acts"></div>
+</div>
+
+<div id="help" role="dialog" aria-label="Keyboard shortcuts">
+  <div>
+    <h2>Presenter keys</h2>
+    <dl>
+      <dt>→ ↓ Space</dt><dd>Next slide</dd>
+      <dt>← ↑ Backspace</dt><dd>Previous slide</dd>
+      <dt>Home / End</dt><dd>First / last slide</dd>
+      <dt>O</dt><dd>Jump menu</dd>
+      <dt>T / R</dt><dd>Start-stop timer / reset it</dd>
+      <dt>F</dt><dd>Full screen (or the button, top left)</dd>
+      <dt>?</dt><dd>This panel</dd>
+    </dl>
+  </div>
+</div>
+
+<div id="nudge">? for keys · O to jump · T for timer</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ─── SET THESE UP FOR YOUR DECK ────────────────────────────────────────────
+  // Section names, keyed by the data-act on each slide.
+  var ACT_NAMES = {"0": "Opening demo", "1": "How flags work", "2": "Experiments and APIs", "3": "Hands-on setup", "4": "Station 1 \u00b7 Create and target", "5": "Station 2 \u00b7 Rollout and rollback", "6": "Station 3 \u00b7 Amplitude user data", "7": "Architecture discussion", "8": "Wave demonstration", "9": "Questions and buffer"};
+  // Target END minute of each section. The timer compares elapsed time against
+  // these so the presenter knows whether to speed up or has room to breathe.
+  var ACT_END = {"0": 5, "1": 20, "2": 25, "3": 30, "4": 42, "5": 52, "6": 65, "7": 77, "8": 85, "9": 90};
+  // Sections shown without an "Act N ·" prefix in the jump menu.
+  var NO_PREFIX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+  // ───────────────────────────────────────────────────────────────────────────
+
+  var stage  = document.getElementById("stage");
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var rail   = document.getElementById("rail");
+  var stamp  = document.getElementById("stamp");
+  var jump   = document.getElementById("jump");
+  var help   = document.getElementById("help");
+  var nudge  = document.getElementById("nudge");
+  var timerEl = document.getElementById("timer");
+  var fsbtn  = document.getElementById("fsbtn");
+  var cur = 0;
+
+  /* ---------- fit the stage to the viewport ---------- */
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = "scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  /* ---------- rail ---------- */
+
+  (function buildRail() {
+    var prevAct = null;
+    slides.forEach(function (sl) {
+      if (prevAct !== null && sl.dataset.act !== prevAct) {
+        var gap = document.createElement("span");
+        gap.className = "tick gap";
+        rail.appendChild(gap);
+      }
+      var t = document.createElement("span");
+      t.className = "tick";
+      rail.appendChild(t);
+      prevAct = sl.dataset.act;
+    });
+  })();
+  var ticks = Array.prototype.slice.call(rail.querySelectorAll(".tick:not(.gap)"));
+
+  /* ---------- jump menu ---------- */
+
+  (function buildJump() {
+    var wrap = jump.querySelector(".acts");
+    var groups = {}, order = [];
+    slides.forEach(function (sl, i) {
+      var a = sl.dataset.act;
+      if (!groups[a]) { groups[a] = []; order.push(a); }
+      groups[a].push({ i: i, title: sl.dataset.title || "Slide " + (i + 1) });
+    });
+    order.forEach(function (a) {
+      var g = document.createElement("div");
+      g.className = "act-grp";
+      var h = document.createElement("h3");
+      h.textContent = (NO_PREFIX.indexOf(a) > -1 ? "" : "Act " + a + " · ") + (ACT_NAMES[a] || a);
+      g.appendChild(h);
+      var ol = document.createElement("ol");
+      groups[a].forEach(function (item) {
+        var li = document.createElement("li");
+        var b = document.createElement("button");
+        b.type = "button";
+        b.dataset.i = String(item.i);
+        var n = document.createElement("span");
+        n.className = "n";
+        n.textContent = item.i + 1;
+        b.appendChild(n);
+        b.appendChild(document.createTextNode(item.title));
+        b.addEventListener("click", function () { go(item.i); closePanels(); });
+        li.appendChild(b); ol.appendChild(li);
+      });
+      g.appendChild(ol); wrap.appendChild(g);
+    });
+  })();
+  var jumpButtons = Array.prototype.slice.call(jump.querySelectorAll("button"));
+
+  /* ---------- navigation ---------- */
+
+  function go(n, skipHash) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+
+    // Pause any video on the slide we're leaving, so it isn't running unseen.
+    slides[cur].querySelectorAll("video").forEach(function (v) { v.pause(); });
+    slides[cur].classList.remove("on");
+
+    cur = n;
+    slides[cur].classList.add("on");
+
+    // Restart video on entry, so it plays from the top every time.
+    slides[cur].querySelectorAll("video").forEach(function (v) {
+      try { v.currentTime = 0; } catch (e) {}
+      var p = v.play(); if (p && p.catch) p.catch(function () {});
+    });
+
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("now", i === cur);
+      t.classList.toggle("seen", i < cur);
+    });
+    var act = slides[cur].dataset.act;
+    stamp.textContent = (ACT_NAMES[act] || "") + "  ·  " + (cur + 1) + " / " + slides.length;
+    jumpButtons.forEach(function (b) { b.classList.toggle("cur", Number(b.dataset.i) === cur); });
+
+    if (!skipHash) { try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {} }
+    renderTimer();
+  }
+  function closePanels() { jump.classList.remove("on"); help.classList.remove("on"); }
+
+  /* ---------- timer ---------- */
+
+  var t0 = null, tick = null;
+  function fmt(ms) {
+    var s = Math.max(0, Math.floor(ms / 1000));
+    return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  function renderTimer() {
+    if (!t0) return;
+    var elapsed = Date.now() - t0, mins = elapsed / 60000;
+    var act = slides[cur].dataset.act, target = ACT_END[act];
+    timerEl.querySelector(".clock").textContent = fmt(elapsed);
+    timerEl.querySelector(".plan").textContent = target ? (ACT_NAMES[act] || "") + " ends " + target + "m" : "";
+    var d = timerEl.querySelector(".delta");
+    timerEl.classList.remove("ahead", "late");
+    if (target) {
+      var over = mins - target;
+      if (over <= -1) { d.textContent = Math.round(-over) + "m spare"; timerEl.classList.add("ahead"); }
+      else if (over < 3) { d.textContent = "on plan"; }
+      else { d.textContent = "+" + Math.round(over) + "m over"; timerEl.classList.add("late"); }
+    } else { d.textContent = ""; }
+  }
+  function toggleTimer() {
+    if (t0) { t0 = null; clearInterval(tick); timerEl.classList.remove("on"); }
+    else { t0 = Date.now(); timerEl.classList.add("on"); renderTimer(); tick = setInterval(renderTimer, 1000); }
+  }
+
+  /* ---------- full screen ---------- */
+
+  function toggleFullscreen() {
+    var el = document.documentElement;
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else if (el.requestFullscreen) {
+      el.requestFullscreen().catch(function () {});
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    }
+  }
+  function syncFullscreen() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    document.body.classList.toggle("isfull", on);
+    fsbtn.querySelector(".label").textContent = on ? "Exit" : "Full screen";
+    fit();
+  }
+  // stopPropagation matters: clicking the viewport advances the slide, and
+  // without this the button would toggle full screen AND skip a slide.
+  fsbtn.addEventListener("click", function (e) { e.stopPropagation(); toggleFullscreen(); });
+  // Listen for the change rather than tracking state — the user can leave
+  // full screen with Escape, which never goes through our button.
+  document.addEventListener("fullscreenchange", syncFullscreen);
+  document.addEventListener("webkitfullscreenchange", syncFullscreen);
+
+  /* ---------- keys ---------- */
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "Escape") { closePanels(); return; }
+    if (jump.classList.contains("on") || help.classList.contains("on")) {
+      if (e.key === "o" || e.key === "O" || e.key === "?") { closePanels(); e.preventDefault(); }
+      return;
+    }
+    switch (e.key) {
+      case "ArrowRight": case "ArrowDown": case " ": case "PageDown": go(cur + 1); e.preventDefault(); break;
+      case "ArrowLeft": case "ArrowUp": case "Backspace": case "PageUp": go(cur - 1); e.preventDefault(); break;
+      case "Home": go(0); e.preventDefault(); break;
+      case "End": go(slides.length - 1); e.preventDefault(); break;
+      case "o": case "O": jump.classList.add("on"); e.preventDefault(); break;
+      case "?": help.classList.add("on"); e.preventDefault(); break;
+      case "t": case "T": toggleTimer(); break;
+      case "r": case "R": if (t0) { t0 = Date.now(); renderTimer(); } break;
+      case "f": case "F": toggleFullscreen(); break;
+    }
+  });
+
+  /* ---------- click to advance ---------- */
+
+  document.getElementById("viewport").addEventListener("click", function (e) {
+    if (jump.classList.contains("on") || help.classList.contains("on") || e.target.closest("a, button, input, select")) return;
+    if (e.clientX < window.innerWidth * 0.12) { go(cur - 1); } else { go(cur + 1); }
+  });
+  help.addEventListener("click", closePanels);
+  jump.addEventListener("click", function (e) { if (e.target === jump) closePanels(); });
+
+  /* ---------- start ---------- */
+
+  function fromHash() {
+    var n = parseInt((location.hash || "").replace("#", ""), 10);
+    return isFinite(n) && n > 0 ? n - 1 : 0;
+  }
+  go(fromHash(), true);
+  window.addEventListener("hashchange", function () {
+    var n = fromHash(); if (n !== cur) go(n, true);
+  });
+  setTimeout(function () { nudge.classList.add("hide"); }, 6000);
+})();
+</script>
+<script>document.querySelectorAll('.workshop-url').forEach(a=>{a.textContent=location.protocol==='file:'?'Open index.html · workshop hub':new URL('index.html',location.href).href;});</script></body></html>

@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>API examples · Sky Lab</title><link rel="stylesheet" href="docs.css"></head><body><header><a class="brand" href="index.html">sky<small>LAB / WORKSHOP</small></a><a href="app.html">Open app ↗</a><a href="handout.html">Exercise guide</a><a href="slides.html">Slides</a></header><main><span class="eyebrow">PRESENTER / PROGRAMMATIC CONTROL</span><h1>Flags through APIs.</h1><p class="lead">These terminal examples are reference material. They are not executed by the static app.</p><div class="callout">Use a separately authorised management API key to change flags. The browser Analytics API key and client deployment key do not grant management access. Replace every placeholder and confirm the target project before running a write.</div><h2>List flags in project 74301</h2><pre>curl --fail-with-body --get \
+  'https://experiment.amplitude.com/api/1/flags' \
+  --header "Authorization: Bearer $SKY_MANAGEMENT_API_KEY" \
+  --data-urlencode 'projectId=74301'</pre><h2>Create a remote flag</h2><p>Save this body as <code>create-flag.json</code>. Replace the participant prefix and deployment ID. This creates configuration; inspect and explicitly activate it after checking the audience.</p><pre>{
+  "projectId": "74301",
+  "key": "yourname-recommendations",
+  "name": "Your name recommendation rail",
+  "evaluationMode": "remote",
+  "variants": [{"key": "on", "name": "New rail"}],
+  "rolloutWeights": {"on": 1},
+  "deployments": ["YOUR_WEB_DEPLOYMENT_ID"]
+}</pre><pre>curl --fail-with-body --request POST \
+  'https://experiment.amplitude.com/api/1/flags' \
+  --header "Authorization: Bearer $SKY_MANAGEMENT_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data-binary @create-flag.json</pre><h2>Roll back a flag</h2><p>Use the management <strong>flag ID</strong> from the create response or Amplitude URL, not the runtime key. The app must fetch again to observe the change.</p><pre>curl --fail-with-body --request PATCH \
+  "https://experiment.amplitude.com/api/1/flags/$SKY_FLAG_ID" \
+  --header "Authorization: Bearer $SKY_MANAGEMENT_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{"enabled":false}'</pre><p>Creation, deployment association and disabling are documented by the <a href="https://amplitude.com/docs/apis/experiment/experiment-management-api-flags">management API flag endpoints</a>. These writes have not been run against the Sky project.</p><h2>Runtime evaluation from a server or terminal</h2><p>This REST example needs a <strong>server deployment key</strong> for a deployment associated with the flag. It is separate from the browser deployment used by the app. Keep this credential outside the site.</p><pre>curl --fail-with-body --get \
+  'https://api.lab.amplitude.com/v1/vardata' \
+  --header "Authorization: Api-Key $SKY_SERVER_DEPLOYMENT_KEY" \
+  --data-urlencode 'user_id=sky-workshop-aroha' \
+  --data-urlencode 'flag_keys=yourname-recommendations'</pre><p>The <a href="https://amplitude.com/docs/apis/experiment/experiment-evaluation-api">evaluation API</a> returns an assignment; it does not change the flag configuration.</p><h2>What the browser SDK does</h2><pre>// Public CLIENT deployment key. Runtime request, not management.
+const client = Experiment.initialize('CLIENT_DEPLOYMENT_KEY', {
+  serverZone: 'us'
+});
+await client.fetch({
+  user_id: 'sky-workshop-aroha',
+  device_id: 'sky-workshop-aroha-web'
+});
+const variant = client.variant('yourname-recommendations');
+const useNewRail = variant.value === 'on';</pre><p>This identity-only request lets remote evaluation use already stored profile data. The app also offers explicit synthetic properties for the earlier exercises. See the <a href="https://amplitude.com/docs/sdks/experiment-sdks/experiment-javascript">SDK documentation</a> for lifecycle and cache behavior. The app adds a timeout, transport error observation and an intentional default path.</p></main><footer>Sky NZ · Amplitude Feature Flags · Project 74301 · US region · Synthetic workshop data<br>Static prototype. Live integration requires approved client keys and project setup.</footer></body></html>

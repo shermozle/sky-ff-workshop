@@ -1,0 +1,651 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deck Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300..600&display=swap">
+
+<!--
+  PRESENTER DECK TEMPLATE
+  ═══════════════════════
+
+  A 1280×720 stage scaled with a transform, so type and spacing are identical
+  on every projector. Everything below the "SLIDES" comment is example content
+  to replace; everything above and below it is machinery to keep.
+
+  Presenter controls:
+    · Visible full-screen button (top left) — the most-missed control
+    · Jump menu grouped by section          — O
+    · Timer aware of the run of show        — T (R resets)
+    · Deep links                            — slides.html#12
+    · Print stylesheet                      — Cmd-P for one slide per page
+
+  Two things to set up for a new deck:
+    1. ACT_NAMES / ACT_END at the bottom — your sections and their target end
+       minutes. The timer reads these to tell the presenter if they're on plan.
+    2. data-act and data-title on every <section class="slide"> — the rail,
+       jump menu and stamp all derive from these.
+
+  Check it with scripts/check_deck.py after every batch of edits.
+-->
+
+<style>
+:root {
+  --ground:   #0A0D13;
+  --panel:    #141A25;
+  --line:     #262F3D;
+  --line-hi:  #38445A;
+  --text:     #F0F3F8;
+  --dim:      #94A0B3;
+  --faint:    #636E80;
+
+  --accent:   #5B8DFF;   /* structure */
+  --signal:   #2FD9AE;   /* live, verified, "watch this" */
+  --action:   #FFA24C;   /* your turn — exercises */
+  --action-ink:#33210D;
+
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --disp: "Archivo", var(--sans);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--ground); color: var(--text);
+  font-family: var(--sans); overflow: hidden;
+}
+
+#viewport {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ground);
+}
+#stage {
+  width: 1280px; height: 720px;
+  position: relative; transform-origin: center center; flex: none;
+}
+
+.slide {
+  position: absolute; inset: 0;
+  padding: 54px 72px 76px;
+  display: none; flex-direction: column;
+  background: var(--ground);
+}
+.slide.on { display: flex; }
+.body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+
+/* ---------- furniture ---------- */
+
+.eyebrow {
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--faint);
+  display: flex; align-items: center; gap: 12px; flex: none;
+}
+.eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
+.eyebrow .mins { margin-left: auto; letter-spacing: .1em; }
+
+h1.cover-title {
+  font-family: var(--disp);
+  font-variation-settings: "wdth" 112, "wght" 800;
+  font-size: 92px; line-height: .98; letter-spacing: -.035em; margin: 0; max-width: 22ch;
+}
+h2.head {
+  font-family: var(--disp);
+  font-variation-settings: "wdth" 104, "wght" 750;
+  font-size: 40px; line-height: 1.08; letter-spacing: -.022em;
+  margin: 18px 0 0; text-wrap: balance; max-width: 30ch;
+}
+p.deck { font-size: 21px; line-height: 1.45; color: var(--dim); font-weight: 300; margin: 16px 0 0; max-width: 62ch; }
+p.deck strong { color: var(--text); font-weight: 500; }
+.kicker {
+  font-family: var(--mono); font-size: 13px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--signal); margin: 0 0 6px;
+}
+.caption { margin: 14px 0 0; font-size: 15.5px; color: var(--faint); font-weight: 300; max-width: 82ch; line-height: 1.45; }
+.caption b { color: var(--dim); font-weight: 500; }
+
+/* ---------- section divider ---------- */
+
+.act-num {
+  font-family: var(--disp);
+  font-variation-settings: "wdth" 125, "wght" 800;
+  font-size: 132px; line-height: .8; margin: 0;
+  color: transparent; -webkit-text-stroke: 2px var(--line-hi); letter-spacing: -.04em;
+}
+.act-slide h1 {
+  font-family: var(--disp);
+  font-variation-settings: "wdth" 110, "wght" 800;
+  font-size: 72px; line-height: 1; letter-spacing: -.032em; margin: 6px 0 0;
+}
+.contains { margin: 30px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 10px; max-width: 56ch; }
+.contains li {
+  font-family: var(--mono); font-size: 13px; color: var(--dim);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px;
+}
+
+/* ---------- rows (term / definition) ---------- */
+
+.rows { margin: 24px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.rows li {
+  display: grid; grid-template-columns: 210px minmax(0, 1fr);
+  gap: 22px; align-items: baseline;
+  padding: 13px 2px; border-bottom: 1px solid var(--line);
+}
+.rows li:first-child { border-top: 1px solid var(--line); }
+.rows .term { font-family: var(--disp); font-variation-settings: "wdth" 100, "wght" 700; font-size: 19px; }
+.rows .term.mono { font-family: var(--mono); font-size: 15px; font-variation-settings: normal; color: var(--signal); }
+.rows .def { font-size: 16.5px; line-height: 1.45; color: var(--dim); font-weight: 300; }
+.rows .def strong { color: var(--text); font-weight: 500; }
+/* NOTE: .rows li is a grid whose *direct children* are exactly two spans, so
+   inline markup nested inside them is safe. Never make a list item a grid
+   container when its inline children (<strong>, <code>) are direct children —
+   grid promotes each to its own cell and the text overlaps. See .steps below. */
+
+/* ---------- cards ---------- */
+
+.grid { display: grid; gap: 16px; margin-top: 26px; }
+.grid.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 19px 20px 21px; display: flex; flex-direction: column; gap: 7px; min-width: 0;
+}
+.card .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.card.signal .tag { color: var(--signal); }
+.card.action .tag { color: var(--action); }
+.card h3 { font-family: var(--disp); font-variation-settings: "wdth" 100, "wght" 700; font-size: 21px; line-height: 1.15; margin: 0; }
+.card p { margin: 0; font-size: 15.5px; line-height: 1.45; color: var(--dim); font-weight: 300; }
+
+/* ---------- code ---------- */
+
+pre.code {
+  margin: 22px 0 0; background: var(--panel);
+  border: 1px solid var(--line); border-left: 3px solid var(--signal); border-radius: 10px;
+  padding: 20px 22px; font-family: var(--mono); font-size: 16px; line-height: 1.62;
+  color: var(--text); overflow-x: auto; white-space: pre; tab-size: 2;
+}
+pre.code .c { color: var(--faint); }
+pre.code .s { color: var(--signal); }
+pre.code .k { color: var(--accent); }
+pre.code .hl { color: var(--action); }
+
+/* ---------- exercise slides ---------- */
+
+.slide.ex { background: linear-gradient(180deg, #12100C 0%, var(--ground) 62%); }
+.slide.ex .eyebrow .dot { background: var(--action); }
+.station { display: flex; align-items: baseline; gap: 16px; margin-top: 18px; }
+.station .snum {
+  font-family: var(--disp); font-variation-settings: "wdth" 118, "wght" 800;
+  font-size: 46px; line-height: 1; color: var(--action); flex: none;
+}
+.station h2 { font-family: var(--disp); font-variation-settings: "wdth" 104, "wght" 750; font-size: 40px; margin: 0; }
+
+/* Block li with an absolutely positioned marker — NOT display:grid, which
+   would put every nested <strong> and <code> in its own cell. */
+.steps { margin: 24px 0 0; padding: 0; list-style: none; counter-reset: st; display: flex; flex-direction: column; gap: 13px; }
+.steps li {
+  position: relative; padding-left: 42px;
+  font-size: 18.5px; line-height: 1.44; color: var(--dim); font-weight: 300;
+}
+.steps li::before {
+  counter-increment: st; content: counter(st);
+  position: absolute; left: 0; top: 3px; width: 26px; padding: 3px 0;
+  font-family: var(--mono); font-size: 13px; color: var(--action);
+  border: 1px solid var(--action-ink); background: var(--action-ink);
+  border-radius: 6px; text-align: center;
+}
+.steps li strong { color: var(--text); font-weight: 500; }
+.steps li .aside { display: block; font-size: 15px; color: var(--faint); margin-top: 3px; }
+
+.pill-row { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.pill {
+  font-family: var(--mono); font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 7px 13px; border-radius: 999px; border: 1px solid var(--line); color: var(--dim);
+}
+.pill.hot { border-color: var(--action); color: var(--action); }
+
+/* ---------- URL callout ---------- */
+
+.urlbox {
+  margin-top: 26px; border: 1px solid var(--signal); background: #0C2C26;
+  border-radius: 12px; padding: 18px 24px;
+  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+}
+.urlbox .lbl { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); flex: none; }
+.urlbox .u { font-family: var(--mono); font-size: 30px; color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+
+/* ---------- rail ---------- */
+
+#rail {
+  position: absolute; left: 72px; right: 72px; bottom: 28px;
+  display: flex; align-items: flex-end; gap: 3px; height: 22px; pointer-events: none;
+}
+#rail .tick { flex: 1 1 auto; height: 3px; background: var(--line); border-radius: 1px; transition: height .18s ease, background .18s ease; }
+#rail .tick.seen { background: var(--line-hi); }
+#rail .tick.now { height: 13px; background: var(--signal); }
+#rail .tick.gap { flex: 0 0 12px; background: transparent; }
+
+#stamp {
+  position: absolute; right: 72px; bottom: 54px;
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em;
+  color: var(--faint); font-variant-numeric: tabular-nums; pointer-events: none;
+}
+
+/* ---------- full-screen button ---------- */
+
+#fsbtn {
+  position: fixed; top: 14px; left: 16px; z-index: 40;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 11px; color: var(--dim); cursor: pointer;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  opacity: .38; transition: opacity .18s ease, color .18s ease, border-color .18s ease;
+}
+#fsbtn:hover { opacity: 1; color: var(--text); border-color: var(--line-hi); }
+#fsbtn:focus-visible { opacity: 1; outline: 2px solid var(--signal); outline-offset: 2px; }
+#fsbtn svg { width: 13px; height: 13px; flex: none; }
+#fsbtn .exit { display: none; }
+body.isfull #fsbtn .enter { display: none; }
+body.isfull #fsbtn .exit { display: block; }
+
+/* ---------- timer ---------- */
+
+#timer {
+  position: fixed; top: 14px; right: 16px; z-index: 40;
+  font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 12px; color: var(--dim);
+  display: none; gap: 12px; align-items: center; font-variant-numeric: tabular-nums;
+}
+#timer.on { display: flex; }
+#timer .clock { color: var(--text); font-size: 14px; font-weight: 600; }
+#timer.ahead .delta { color: var(--signal); }
+#timer.late .delta { color: #FF7A85; }
+
+/* ---------- jump menu ---------- */
+
+#jump { position: fixed; inset: 0; z-index: 60; background: #06080C; display: none; padding: 40px 48px; overflow-y: auto; }
+#jump.on { display: block; }
+#jump h2 { font-family: var(--disp); font-variation-settings: "wdth" 108, "wght" 800; font-size: 26px; margin: 0 0 4px; }
+#jump .hint { font-family: var(--mono); font-size: 11.5px; color: var(--faint); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 26px; }
+#jump .acts { columns: 3; column-gap: 40px; }
+@media (max-width: 1000px) { #jump .acts { columns: 2; } }
+#jump .act-grp { break-inside: avoid; margin-bottom: 24px; }
+#jump .act-grp h3 {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--signal); margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+#jump ol { list-style: none; margin: 0; padding: 0; }
+#jump button {
+  display: flex; gap: 10px; width: 100%; background: none; border: 0; cursor: pointer;
+  text-align: left; padding: 5px 7px; border-radius: 6px;
+  font-family: var(--sans); font-size: 14px; color: var(--dim); align-items: baseline;
+}
+#jump button:hover { background: var(--panel); color: var(--text); }
+#jump button.cur { color: var(--signal); }
+#jump button .n { font-family: var(--mono); font-size: 11px; color: var(--faint); min-width: 20px; font-variant-numeric: tabular-nums; }
+
+#help { position: fixed; inset: 0; z-index: 70; background: #06080C; display: none; align-items: center; justify-content: center; }
+#help.on { display: flex; }
+#help h2 { font-family: var(--disp); font-variation-settings: "wdth" 108, "wght" 800; font-size: 28px; margin: 0 0 20px; }
+#help dl { display: grid; grid-template-columns: auto 1fr; gap: 11px 20px; margin: 0; font-size: 15px; max-width: 520px; }
+#help dt { font-family: var(--mono); font-size: 13px; color: var(--signal); }
+#help dd { margin: 0; color: var(--dim); font-weight: 300; }
+
+#nudge {
+  position: fixed; bottom: 14px; left: 16px; z-index: 30;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+  color: var(--faint); opacity: .55; transition: opacity .4s ease;
+}
+#nudge.hide { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) { #rail .tick, #nudge, #fsbtn { transition: none; } }
+
+/* ---------- print / PDF fallback ---------- */
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { overflow: visible; height: auto; background: #fff; }
+  #viewport { position: static; display: block; }
+  #stage { width: 1280px; height: auto; transform: none !important; }
+  .slide { position: static; display: flex !important; width: 1280px; height: 720px; page-break-after: always; }
+  #timer, #jump, #help, #nudge, #fsbtn { display: none !important; }
+}
+</style>
+
+<div id="viewport">
+  <div id="stage">
+
+<!-- ═══════════════ SLIDES — replace everything to the closing marker ═══════════════ -->
+
+<section class="slide" data-act="0" data-title="Cover">
+  <div class="body">
+    <h1 class="cover-title">Workshop<br>title here.</h1>
+    <p class="deck" style="font-size:24px;margin-top:26px">One line on what the session is and what people leave with.</p>
+  </div>
+</section>
+
+<section class="slide" data-act="0" data-title="What you need">
+  <div class="eyebrow"><span class="dot"></span>Act 0 · Frame<span class="mins">5 min</span></div>
+  <div class="body">
+    <h2 class="head">What you need</h2>
+    <ul class="rows">
+      <li><span class="term">A laptop</span><span class="def">Anything that runs a browser.</span></li>
+      <li><span class="term">An account</span><span class="def">Free tier is fine — we do that at station 1.</span></li>
+      <li><span class="term">The pack</span><span class="def">Slides, handout and the app. <strong>Open it now.</strong></span></li>
+    </ul>
+    <div class="urlbox">
+      <span class="lbl">Everything's here</span>
+      <span class="u">example.github.io/workshop</span>
+    </div>
+  </div>
+</section>
+
+<section class="slide act-slide" data-act="1" data-title="Act 1 divider">
+  <div class="body">
+    <p class="act-num">01</p>
+    <h1>First section</h1>
+    <ul class="contains"><li>Topic one</li><li>Topic two</li><li>Topic three</li></ul>
+  </div>
+</section>
+
+<section class="slide" data-act="1" data-title="Concept cards">
+  <div class="eyebrow"><span class="dot"></span>Act 1 · First section<span class="mins">10 min</span></div>
+  <div class="body">
+    <h2 class="head">Three things that matter</h2>
+    <div class="grid c3">
+      <div class="card"><span class="tag">One</span><h3>First idea</h3><p>What it is and why it matters, in a sentence or two.</p></div>
+      <div class="card signal"><span class="tag">Two</span><h3>Second idea</h3><p>Keep card text short — this is read from the back of a room.</p></div>
+      <div class="card action"><span class="tag">Three</span><h3>Third idea</h3><p>Three or four cards across is the readable limit.</p></div>
+    </div>
+    <p class="caption">Captions carry the practical point — what to do, or what to avoid.</p>
+  </div>
+</section>
+
+<section class="slide" data-act="1" data-title="Code example">
+  <div class="eyebrow"><span class="dot"></span>Act 1 · First section<span class="mins">10 min</span></div>
+  <div class="body">
+    <p class="kicker">Escape &lt; and &gt; in code blocks</p>
+    <pre class="code">&lt;script src=<span class="s">"https://example.com/<span class="hl">YOUR_KEY</span>.js"</span>&gt;&lt;/script&gt;</pre>
+    <p class="caption">One idea per code slide. If it needs scrolling, it's too long for a projector.</p>
+  </div>
+</section>
+
+<section class="slide ex" data-act="2" data-title="Station 1">
+  <div class="eyebrow"><span class="dot"></span>Hands on · Station 1<span class="mins">10 min</span></div>
+  <div class="body">
+    <div class="station"><span class="snum">1</span><h2>First station</h2></div>
+    <ol class="steps">
+      <li>A concrete instruction with a <strong>bolded</strong> action.</li>
+      <li>Another step.<span class="aside">Aside text for the detail that would clutter the main line.</span></li>
+      <li>A third step.</li>
+    </ol>
+    <div class="pill-row">
+      <span class="pill hot">Done when: something checkable</span>
+      <span class="pill">A warning or gotcha</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ END SLIDES ═══════════════ -->
+
+    <div id="rail" aria-hidden="true"></div>
+    <div id="stamp"></div>
+  </div>
+</div>
+
+<button id="fsbtn" type="button" aria-label="Toggle full screen">
+  <svg class="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+    <path d="M1.5 5.5v-4h4M14.5 5.5v-4h-4M1.5 10.5v4h4M14.5 10.5v4h-4"/>
+  </svg>
+  <svg class="exit" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+    <path d="M5.5 1.5v4h-4M10.5 1.5v4h4M5.5 14.5v-4h-4M10.5 14.5v-4h4"/>
+  </svg>
+  <span class="label">Full screen</span>
+</button>
+
+<div id="timer" aria-live="off">
+  <span class="clock">00:00</span><span class="plan"></span><span class="delta"></span>
+</div>
+
+<div id="jump" role="dialog" aria-label="Jump to slide">
+  <h2>Jump to</h2>
+  <p class="hint">Click a slide · Esc to close</p>
+  <div class="acts"></div>
+</div>
+
+<div id="help" role="dialog" aria-label="Keyboard shortcuts">
+  <div>
+    <h2>Presenter keys</h2>
+    <dl>
+      <dt>→ ↓ Space</dt><dd>Next slide</dd>
+      <dt>← ↑ Backspace</dt><dd>Previous slide</dd>
+      <dt>Home / End</dt><dd>First / last slide</dd>
+      <dt>O</dt><dd>Jump menu</dd>
+      <dt>T / R</dt><dd>Start-stop timer / reset it</dd>
+      <dt>F</dt><dd>Full screen (or the button, top left)</dd>
+      <dt>?</dt><dd>This panel</dd>
+    </dl>
+  </div>
+</div>
+
+<div id="nudge">? for keys · O to jump · T for timer</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ─── SET THESE UP FOR YOUR DECK ────────────────────────────────────────────
+  // Section names, keyed by the data-act on each slide.
+  var ACT_NAMES = { "0": "Frame", "1": "First section", "2": "Hands on" };
+  // Target END minute of each section. The timer compares elapsed time against
+  // these so the presenter knows whether to speed up or has room to breathe.
+  var ACT_END   = { "0": 5, "1": 20, "2": 60 };
+  // Sections shown without an "Act N ·" prefix in the jump menu.
+  var NO_PREFIX = ["2"];
+  // ───────────────────────────────────────────────────────────────────────────
+
+  var stage  = document.getElementById("stage");
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var rail   = document.getElementById("rail");
+  var stamp  = document.getElementById("stamp");
+  var jump   = document.getElementById("jump");
+  var help   = document.getElementById("help");
+  var nudge  = document.getElementById("nudge");
+  var timerEl = document.getElementById("timer");
+  var fsbtn  = document.getElementById("fsbtn");
+  var cur = 0;
+
+  /* ---------- fit the stage to the viewport ---------- */
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = "scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  /* ---------- rail ---------- */
+
+  (function buildRail() {
+    var prevAct = null;
+    slides.forEach(function (sl) {
+      if (prevAct !== null && sl.dataset.act !== prevAct) {
+        var gap = document.createElement("span");
+        gap.className = "tick gap";
+        rail.appendChild(gap);
+      }
+      var t = document.createElement("span");
+      t.className = "tick";
+      rail.appendChild(t);
+      prevAct = sl.dataset.act;
+    });
+  })();
+  var ticks = Array.prototype.slice.call(rail.querySelectorAll(".tick:not(.gap)"));
+
+  /* ---------- jump menu ---------- */
+
+  (function buildJump() {
+    var wrap = jump.querySelector(".acts");
+    var groups = {}, order = [];
+    slides.forEach(function (sl, i) {
+      var a = sl.dataset.act;
+      if (!groups[a]) { groups[a] = []; order.push(a); }
+      groups[a].push({ i: i, title: sl.dataset.title || "Slide " + (i + 1) });
+    });
+    order.forEach(function (a) {
+      var g = document.createElement("div");
+      g.className = "act-grp";
+      var h = document.createElement("h3");
+      h.textContent = (NO_PREFIX.indexOf(a) > -1 ? "" : "Act " + a + " · ") + (ACT_NAMES[a] || a);
+      g.appendChild(h);
+      var ol = document.createElement("ol");
+      groups[a].forEach(function (item) {
+        var li = document.createElement("li");
+        var b = document.createElement("button");
+        b.type = "button";
+        b.dataset.i = String(item.i);
+        var n = document.createElement("span");
+        n.className = "n";
+        n.textContent = item.i + 1;
+        b.appendChild(n);
+        b.appendChild(document.createTextNode(item.title));
+        b.addEventListener("click", function () { go(item.i); closePanels(); });
+        li.appendChild(b); ol.appendChild(li);
+      });
+      g.appendChild(ol); wrap.appendChild(g);
+    });
+  })();
+  var jumpButtons = Array.prototype.slice.call(jump.querySelectorAll("button"));
+
+  /* ---------- navigation ---------- */
+
+  function go(n, skipHash) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+
+    // Pause any video on the slide we're leaving, so it isn't running unseen.
+    slides[cur].querySelectorAll("video").forEach(function (v) { v.pause(); });
+    slides[cur].classList.remove("on");
+
+    cur = n;
+    slides[cur].classList.add("on");
+
+    // Restart video on entry, so it plays from the top every time.
+    slides[cur].querySelectorAll("video").forEach(function (v) {
+      try { v.currentTime = 0; } catch (e) {}
+      var p = v.play(); if (p && p.catch) p.catch(function () {});
+    });
+
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("now", i === cur);
+      t.classList.toggle("seen", i < cur);
+    });
+    var act = slides[cur].dataset.act;
+    stamp.textContent = (ACT_NAMES[act] || "") + "  ·  " + (cur + 1) + " / " + slides.length;
+    jumpButtons.forEach(function (b) { b.classList.toggle("cur", Number(b.dataset.i) === cur); });
+
+    if (!skipHash) { try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {} }
+    renderTimer();
+  }
+  function closePanels() { jump.classList.remove("on"); help.classList.remove("on"); }
+
+  /* ---------- timer ---------- */
+
+  var t0 = null, tick = null;
+  function fmt(ms) {
+    var s = Math.max(0, Math.floor(ms / 1000));
+    return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  function renderTimer() {
+    if (!t0) return;
+    var elapsed = Date.now() - t0, mins = elapsed / 60000;
+    var act = slides[cur].dataset.act, target = ACT_END[act];
+    timerEl.querySelector(".clock").textContent = fmt(elapsed);
+    timerEl.querySelector(".plan").textContent = target ? (ACT_NAMES[act] || "") + " ends " + target + "m" : "";
+    var d = timerEl.querySelector(".delta");
+    timerEl.classList.remove("ahead", "late");
+    if (target) {
+      var over = mins - target;
+      if (over <= -1) { d.textContent = Math.round(-over) + "m spare"; timerEl.classList.add("ahead"); }
+      else if (over < 3) { d.textContent = "on plan"; }
+      else { d.textContent = "+" + Math.round(over) + "m over"; timerEl.classList.add("late"); }
+    } else { d.textContent = ""; }
+  }
+  function toggleTimer() {
+    if (t0) { t0 = null; clearInterval(tick); timerEl.classList.remove("on"); }
+    else { t0 = Date.now(); timerEl.classList.add("on"); renderTimer(); tick = setInterval(renderTimer, 1000); }
+  }
+
+  /* ---------- full screen ---------- */
+
+  function toggleFullscreen() {
+    var el = document.documentElement;
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else if (el.requestFullscreen) {
+      el.requestFullscreen().catch(function () {});
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    }
+  }
+  function syncFullscreen() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    document.body.classList.toggle("isfull", on);
+    fsbtn.querySelector(".label").textContent = on ? "Exit" : "Full screen";
+    fit();
+  }
+  // stopPropagation matters: clicking the viewport advances the slide, and
+  // without this the button would toggle full screen AND skip a slide.
+  fsbtn.addEventListener("click", function (e) { e.stopPropagation(); toggleFullscreen(); });
+  // Listen for the change rather than tracking state — the user can leave
+  // full screen with Escape, which never goes through our button.
+  document.addEventListener("fullscreenchange", syncFullscreen);
+  document.addEventListener("webkitfullscreenchange", syncFullscreen);
+
+  /* ---------- keys ---------- */
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "Escape") { closePanels(); return; }
+    if (jump.classList.contains("on") || help.classList.contains("on")) {
+      if (e.key === "o" || e.key === "O" || e.key === "?") { closePanels(); e.preventDefault(); }
+      return;
+    }
+    switch (e.key) {
+      case "ArrowRight": case "ArrowDown": case " ": case "PageDown": go(cur + 1); e.preventDefault(); break;
+      case "ArrowLeft": case "ArrowUp": case "Backspace": case "PageUp": go(cur - 1); e.preventDefault(); break;
+      case "Home": go(0); e.preventDefault(); break;
+      case "End": go(slides.length - 1); e.preventDefault(); break;
+      case "o": case "O": jump.classList.add("on"); e.preventDefault(); break;
+      case "?": help.classList.add("on"); e.preventDefault(); break;
+      case "t": case "T": toggleTimer(); break;
+      case "r": case "R": if (t0) { t0 = Date.now(); renderTimer(); } break;
+      case "f": case "F": toggleFullscreen(); break;
+    }
+  });
+
+  /* ---------- click to advance ---------- */
+
+  document.getElementById("viewport").addEventListener("click", function (e) {
+    if (jump.classList.contains("on") || help.classList.contains("on")) return;
+    if (e.clientX < window.innerWidth * 0.12) { go(cur - 1); } else { go(cur + 1); }
+  });
+  help.addEventListener("click", closePanels);
+  jump.addEventListener("click", function (e) { if (e.target === jump) closePanels(); });
+
+  /* ---------- start ---------- */
+
+  function fromHash() {
+    var n = parseInt((location.hash || "").replace("#", ""), 10);
+    return isFinite(n) && n > 0 ? n - 1 : 0;
+  }
+  go(fromHash(), true);
+  window.addEventListener("hashchange", function () {
+    var n = fromHash(); if (n !== cur) go(n, true);
+  });
+  setTimeout(function () { nudge.classList.add("hide"); }, 6000);
+})();
+</script>

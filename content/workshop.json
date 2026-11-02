@@ -1,0 +1,225 @@
+{
+  "duration": 90,
+  "blocks": [
+    {
+      "name": "Opening demo",
+      "minutes": 5,
+      "slides": [
+        {
+          "title": "Feature flags for Sky NZ",
+          "minutes": 2,
+          "body": "<p class=\"big\">Control recommendations and content promotions.<br>Choose who sees a change, then roll it back.</p><div class=\"grid c2\"><div class=\"card\"><span class=\"tag\">90 minutes</span><h3>Configure, observe, discuss</h3><p>Use a ready-made app and five fictional viewers.</p></div><div class=\"card\"><span class=\"tag\">Today\u2019s scope</span><h3>A static streaming prototype</h3><p>Live mode calls Amplitude directly. Backend placement is an architecture discussion.</p></div></div>",
+          "notes": "Open the app in practice mode. Explain that the catalogue and viewers are fictional. Today\u2019s app has no Sky backend. The project target is 74301 in the US; the supplied browser keys are configured. Verify live flags before presenting.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Watch a rollout change the rail",
+          "minutes": 3,
+          "body": "<ol class=\"steps\"><li>Switch from Aroha to Ben. Compare their subscriptions.</li><li>Target Sky Sport, evaluate, then switch viewers again.</li><li>Disable the practice flag and return to the default rail.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: the room can explain who saw the new rail</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
+          "notes": "Demonstrate a Sport target at 100%, Aroha on, Ben off, then rollback. Say that practice bucketing is simulated. In the live rehearsal repeat the demonstration with a presenter flag in Amplitude. Ask where Sky would put this decision in its recommendation stack.",
+          "cut": "",
+          "exercise": false
+        }
+      ]
+    },
+    {
+      "name": "How flags work",
+      "minutes": 15,
+      "slides": [
+        {
+          "title": "A flag is a runtime decision",
+          "minutes": 2,
+          "body": "<div class=\"flow\"><div class=\"node\">Application code<small>Two supported experiences</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Flag decision<small>A key resolves to a variant</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">User experience<small>Render the selected path</small></div></div><p class=\"deck\">The application must already contain the new behavior and a working default.</p>",
+          "notes": "Use recommendation-rail as the example. The on variant selects a different fictional rail. A configuration change controls existing code; a flag cannot install missing behavior or undo a destructive data migration.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Configuration and evaluation are separate",
+          "minutes": 2,
+          "body": "<div class=\"flow\"><div class=\"node\">Control plane<small>Create rules, variants and rollout</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Delivery + SDK<small>Retrieve configuration or decisions</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Application<small>Use the result at the decision point</small></div></div><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/experiment-quick-start\">Experiment quick start</a></p>",
+          "notes": "A deployment groups flags delivered to a particular integration. In the workshop all participant flags join the web client deployment. A server deployment would belong to the backend service. A flag key and a management API flag ID are different identifiers.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Local and remote evaluation",
+          "minutes": 3,
+          "body": "<table class=\"compare\"><tr><th></th><th>Local evaluation</th><th>Remote evaluation</th></tr><tr><td>Decision happens</td><td>Inside the SDK runtime</td><td>At Amplitude</td></tr><tr><td>Decision inputs</td><td>Locally available user data</td><td>Request data + supported enrichment</td></tr><tr><td>Network on decision path</td><td>No, after configuration loads</td><td>Yes, when fetching a decision</td></tr></table><p class=\"caption\">Server-side code can use either mode. Remote does not mean browser-only.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/remote-evaluation\">Remote evaluation</a></p>",
+          "notes": "Draw a backend boundary verbally: a server can ask Amplitude for a remote result or evaluate locally with prefetched configuration. This static app demonstrates remote evaluation; it does not benchmark a server SDK. Local cohort support depends on SDK and setup; avoid claiming that every targeting capability is identical.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Three operations, three timings",
+          "minutes": 2,
+          "body": "<div class=\"grid c3\"><div class=\"card\"><span class=\"tag\">1</span><h3>Fetch a decision</h3><p>Network round trip plus service and SDK work.</p></div><div class=\"card\"><span class=\"tag\">2</span><h3>Read a cached variant</h3><p>Read an already fetched decision. No rule evaluation is implied.</p></div><div class=\"card\"><span class=\"tag\">3</span><h3>Evaluate locally</h3><p>Run rules against a user and cached configuration.</p></div></div><p class=\"caption\">A quick cached read does not measure remote evaluation latency.</p>",
+          "notes": "Use the inspector. Its fetch timer includes SDK processing; its cached-read timer wraps variant access. It cannot tell whether Amplitude served a CDN hit. Browser timings are not an estimate of Sky backend p95 or p99 latency.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Caches have different jobs",
+          "minutes": 2,
+          "body": "<div class=\"grid c3\"><div class=\"card\"><span class=\"tag\">SDK</span><h3>Stored decisions</h3><p>Used by variant reads until the app fetches again.</p></div><div class=\"card\"><span class=\"tag\">Delivery</span><h3>CDN cache</h3><p>Amortises remote requests. Flag changes invalidate deployment caches.</p></div><div class=\"card\"><span class=\"tag\">Local SDK</span><h3>Flag configuration</h3><p>Refresh rules separately from request-time evaluation.</p></div></div><p class=\"caption\">A changed rule still needs to reach the application. Test the whole rollback path.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/under-the-hood/performance-and-caching\">Performance and caching</a></p>",
+          "notes": "Explain that browser cached reads are different from CDN response caches. Do not promise instantaneous rollback everywhere. In this app the attendee must click Evaluate flags after editing a remote flag. Polling, startup and refresh behavior depend on the chosen SDK and integration.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Design latency and failure behavior",
+          "minutes": 2,
+          "body": "<ol class=\"steps\"><li>Choose a refresh strategy and a time budget.</li><li>Serve an intentional default when evaluation is unavailable.</li><li>Measure from Sky\u2019s actual runtime and network location.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: there is an owner for defaults and refresh behavior</span></div><p class=\"caption\">Seed historical profiles before the session. Property enrichment can lag profile updates.</p>",
+          "notes": "For recommendation services, ask if a default rail is acceptable during an outage. This app discards the prior identity\u2019s decision and shows the default during a fetch or on failure. Other production systems may choose last-known-good for the same identity; that is an explicit engineering choice.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Rollout and rollback need observation",
+          "minutes": 2,
+          "body": "<div class=\"flow\"><div class=\"node\">Release<small>Start with QA or an eligible segment</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Ramp<small>Increase allocation; watch guardrails</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Rollback<small>Disable, refresh, verify the default</small></div></div><p class=\"deck\">Track errors, rail load time and engagement alongside the rollout.</p>",
+          "notes": "Discuss a staged 1%, 10%, 50%, 100% release as an example, not an automatic policy. Verify consistent identities. Reducing allocation and disabling a flag are different actions. A flag controls the new path; it is not content authorisation.",
+          "cut": "",
+          "exercise": false
+        }
+      ]
+    },
+    {
+      "name": "Experiments and APIs",
+      "minutes": 5,
+      "slides": [
+        {
+          "title": "Flags and experiments share delivery",
+          "minutes": 2,
+          "body": "<div class=\"grid c2\"><div class=\"card\"><span class=\"tag\">Feature flag</span><h3>Who receives a release?</h3><p>Targeting, variants, assignment and rollout controls.</p></div><div class=\"card\"><span class=\"tag\">Experiment</span><h3>What effect did it have?</h3><p>A hypothesis, exposure measurement, success metrics and analysis.</p></div></div><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/feature-experiment/data-model\">Data model</a></p>",
+          "notes": "A release can use the same delivery concepts as an experiment. Turning on a flag does not establish causal impact. For a rail experiment, define exposure at the point the rail is encountered and measure a decision metric such as playback starts with guardrails.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Manage configuration programmatically",
+          "minutes": 3,
+          "body": "<pre class=\"code\">GET   /api/1/flags?projectId=74301\nPOST  /api/1/flags\nPATCH /api/1/flags/{flagId}\n      {\"enabled\": false}</pre><p class=\"deck\">Management API: configuration changes.<br>SDK / evaluation API: runtime decisions.</p><p class=\"caption\">Presenter examples use management credentials outside the static site.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/apis/experiment/experiment-management-api-flags\">Management API flag endpoints</a></p>",
+          "notes": "Open api-examples.html. Walk through a list, create and disable call. The create example associates a flag with a deployment but leaves activation to an explicit step. Management API access requires a separate management key, not either browser key. Runtime REST examples require a server deployment key. No participant runs these privileged calls.",
+          "cut": "Cut point: show the list and disable calls only; the full examples remain in the guide.",
+          "exercise": false
+        }
+      ]
+    },
+    {
+      "name": "Hands-on setup",
+      "minutes": 5,
+      "slides": [
+        {
+          "title": "Open your workshop workspace",
+          "minutes": 5,
+          "body": "<ol class=\"steps\"><li>Open the app and exercise guide from the hub.</li><li>Select Live once the presenter has configured the deployment.</li><li>Choose a unique prefix: <code>alex-recommendations</code>.</li><li>Use project 74301 and the shared web client deployment.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: you can find the project, app and viewer selector</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
+          "notes": "Confirm create, edit and activation permissions before starting. If live keys are still unavailable, tell the room explicitly that practice mode is a simulation. Have a presenter flag ready for anyone without edit access. Each attendee should use their own unique flag prefix. Do not edit someone else\u2019s flag.",
+          "cut": "",
+          "exercise": true
+        }
+      ]
+    },
+    {
+      "name": "Station 1 \u00b7 Create and target",
+      "minutes": 12,
+      "slides": [
+        {
+          "title": "1 / Create your recommendation flag",
+          "minutes": 12,
+          "body": "<ol class=\"steps\"><li>Create a remote-evaluation flag with your unique key and an <code>on</code> variant.</li><li>Attach the workshop web deployment and activate at 100%.</li><li>Paste the key into the app and evaluate.</li><li>Target <code>subscription_packages</code> containing <code>Sky Sport</code>; leave other users off.</li><li>Compare Aroha, Ben and Dev.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: Aroha and Dev see the new rail; Ben sees the default</span></div><p class=\"caption\">Use identity + profile properties for this station. Incognito alone does not change identity.</p><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
+          "notes": "At minute 30 begin this station. Confirm all-other-users is off; the target segment allocates 100% to on. With array properties use the available contains/member operator for Sky Sport and check the UI preview. Aroha and Dev qualify. Ben does not. The app treats only the literal variant value on as enabled. If anyone is stuck, pair them with a working participant or use the presenter flag.",
+          "cut": "",
+          "exercise": true
+        }
+      ]
+    },
+    {
+      "name": "Station 2 \u00b7 Rollout and rollback",
+      "minutes": 10,
+      "slides": [
+        {
+          "title": "2 / Test identity and release scope",
+          "minutes": 10,
+          "body": "<ol class=\"steps\"><li>Remove the subscription rule; set an all-user rollout to 50%.</li><li>Compare all five viewers, then re-evaluate the same viewer.</li><li>Copy the scenario URL into Incognito; keep the identity unchanged.</li><li>Switch the selected viewer to test another identity.</li><li>Disable the flag in Amplitude and evaluate again.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: the new rail disappears after rollback and refresh</span></div><p class=\"caption\">Five viewers may not split evenly at 50%. Flag keys are in the URL; connection keys are not.</p>",
+          "notes": "By minute 42 move to percentage rollout. Keep consistent bucketing settings. Incognito may need keys entered again until they are deployed in config.js. Same identity is necessary for stable comparison; other rule inputs and configuration must stay the same too. Do not imply a five-user sample must split 2/3. Confirm the real rollback in Amplitude and fetch again. Practice rollback is available only in simulated mode.",
+          "cut": "",
+          "exercise": true
+        }
+      ]
+    },
+    {
+      "name": "Station 3 \u00b7 Amplitude user data",
+      "minutes": 13,
+      "slides": [
+        {
+          "title": "3 / Use what Amplitude knows",
+          "minutes": 13,
+          "body": "<ol class=\"steps\"><li>Set <code>engagement_level = high</code> as the target at 100%; everyone else off.</li><li>Select \u201cSend identity only\u201d and evaluate Aroha and Casey.</li><li>Expand Request inputs: no profile properties are sent.</li><li>Inspect the seeded user profiles in Amplitude.</li><li>Explain where the request and the enrichment happen.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: Aroha qualifies, Casey does not, with identity-only requests</span></div><p class=\"caption\">The fixture panel shows expected data. Inspect Amplitude to verify the stored profile.</p>",
+          "notes": "Start at minute 52 and finish by 65. Ensure previous rules are removed. In the live rehearsal verify Aroha high and Casey low ahead of time. The server enriches the remote request from stored Analytics properties. The browser inspector cannot show Amplitude\u2019s private enrichment internals; use profile inspection plus identity-only requests and outcomes as evidence. Property freshness can lag, so do not make attendees update a profile and expect an immediate change. If profiles are not ready, demonstrate explicit inputs and explain why this station cannot yet be verified.",
+          "cut": "",
+          "exercise": true
+        }
+      ]
+    },
+    {
+      "name": "Architecture discussion",
+      "minutes": 12,
+      "slides": [
+        {
+          "title": "Now / map the current decision path",
+          "minutes": 4,
+          "body": "<div class=\"flow\"><div class=\"node\">TV / streaming client<small>Where is the rail requested?</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">Sky backend<small>Where is the behavior selected?</small></div><span class=\"arrow\">\u2192</span><div class=\"node\">User data<small>Which system owns each input?</small></div></div><p class=\"deck\">Map one recommendation or promo request together.</p>",
+          "notes": "We do not yet know Sky\u2019s current architecture. Ask the room to draw clients, API gateway, recommendation service, cache and user data sources. Find the decision point, current release mechanism, acceptable default, latency budget and the team that owns it. Record facts separately from proposals.",
+          "cut": "Cut point: map one backend service only.",
+          "exercise": false
+        },
+        {
+          "title": "Next / introduce one backend flag",
+          "minutes": 4,
+          "body": "<div class=\"grid c3\"><div class=\"card\"><span class=\"tag\">Decision point</span><h3>Recommendation service</h3><p>Choose one behavior with an owned default and rollback path.</p></div><div class=\"card\"><span class=\"tag\">Evaluation mode</span><h3>Choose per requirement</h3><p>Local for available inputs; remote when enrichment is needed.</p></div><div class=\"card\"><span class=\"tag\">Verification</span><h3>Observe the result</h3><p>Measure latency, error rate, exposure and user experience.</p></div></div><p class=\"caption\">This is a proposal for discussion. The workshop app does not run a backend.</p>",
+          "notes": "Discuss a first flag around a backend rail selector. Compare supplying trusted subscription facts to a local SDK against requesting remote enrichment for an engagement-driven change. Subscription entitlements still need authoritative enforcement. The app\u2019s editable viewer is a teaching fixture, not an authentication model.",
+          "cut": "",
+          "exercise": false
+        },
+        {
+          "title": "Future / consistent delivery across platforms",
+          "minutes": 4,
+          "body": "<div class=\"grid c3\"><div class=\"card\"><span class=\"tag\">SDKs</span><h3>Shared evaluation contracts</h3><p>Identity, defaults, variant types and refresh behavior.</p></div><div class=\"card\"><span class=\"tag\">Operations</span><h3>Owned flag lifecycles</h3><p>Permissions, CI integration, expiry and cleanup.</p></div><div class=\"card\"><span class=\"tag\">Measurement</span><h3>Connect release to outcomes</h3><p>Intentional exposure, guardrails and experiments.</p></div></div><p class=\"caption\">Cross-platform consistency needs aligned identity, rules and bucketing; it is not automatic.</p>",
+          "notes": "Ask what would make this ideal for Sky\u2019s TV platforms and backend teams. SDKs package lifecycle, caching, evaluation and integration behavior, reducing custom plumbing. Verify support for each target language and TV runtime before choosing an implementation. Capture next actions and owners rather than asserting a future architecture.",
+          "cut": "Cut point: collect one desired outcome and one owner from the room.",
+          "exercise": false
+        }
+      ]
+    },
+    {
+      "name": "Wave demonstration",
+      "minutes": 8,
+      "slides": [
+        {
+          "title": "Wave / standard demonstration",
+          "minutes": 8,
+          "body": "<p class=\"big\">Simon\u2019s standard Wave demo.</p><p class=\"deck\">Connect the demonstration to a question raised during the workshop, then return for questions.</p>",
+          "notes": "Switch to your standard Wave environment and run your usual demonstration. No custom Wave setup is included in this pack. Keep the eight-minute limit and return to the closing slide.",
+          "cut": "If earlier sections overrun, shorten this demo in agreement with the session priorities.",
+          "exercise": false
+        }
+      ]
+    },
+    {
+      "name": "Questions and buffer",
+      "minutes": 5,
+      "slides": [
+        {
+          "title": "Questions and next steps",
+          "minutes": 5,
+          "body": "<ol class=\"steps\"><li>Which backend decision is the first candidate?</li><li>Which evaluation mode fits its data and latency needs?</li><li>Who owns setup, verification and the rollback rehearsal?</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: there is a concrete next step</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div><p class=\"caption\">Optional buffer station: create a second promo flag and copy a scenario containing both keys.</p>",
+          "notes": "Use this time for questions and recovery. Optional station 4 is the promo flag: create a second remote on/off flag, attach the same deployment, enter its key, target Movies and compare Ben with Aroha. This is extra practice, not a prerequisite. End by capturing the owner of the first technical follow-up.",
+          "cut": "Optional station 4 is the first material to omit if time is tight.",
+          "exercise": true
+        }
+      ]
+    }
+  ]
+}
