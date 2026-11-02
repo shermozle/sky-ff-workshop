@@ -211,7 +211,7 @@
   ['deployment', 'api-key', 'track'].forEach(id => $(id).addEventListener('change', () => invalidate('Connection inputs changed. Save connection, then evaluate.')));
   $('watch').addEventListener('click', () => preview('Featured collection'));
   $('more').addEventListener('click', () => $('info').showModal()); $('close-info').addEventListener('click', () => $('info').close());
-  sync(); renderExperience(false, false); log('Workshop ready. Project 74301 · US. Synthetic profiles only.');
+  sync(); renderExperience(false, false); log('Workshop ready. Feature Flag workshop · Org 74301 · US. Synthetic profiles only.');
   if ($('mode').value === 'practice') void evaluate();
   else status('Live scenario loaded. Check the connection settings, then evaluate.');
 })();

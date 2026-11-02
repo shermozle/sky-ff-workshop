@@ -26,7 +26,7 @@ async function main() {
     const page = await context.newPage(); const errors = []; let practiceRequests = 0;
     page.on('pageerror', error => errors.push(error.message));
     await page.route('https://**/*', route => { practiceRequests++; return route.abort(); });
-    await context.route('**/config.js', route => route.fulfill({ contentType: 'text/javascript', body: "window.SKY_WORKSHOP_CONFIG = {projectId:'74301',region:'us',analyticsApiKey:'YOUR_ANALYTICS_API_KEY',deploymentKey:'YOUR_CLIENT_DEPLOYMENT_KEY',deploymentName:'sky-workshop-web'};" }));
+    await context.route('**/config.js', route => route.fulfill({ contentType: 'text/javascript', body: "window.SKY_WORKSHOP_CONFIG = {projectId:'',orgId:'74301',projectName:'Feature Flag workshop',region:'us',analyticsApiKey:'YOUR_ANALYTICS_API_KEY',deploymentKey:'YOUR_CLIENT_DEPLOYMENT_KEY',deploymentName:'sky-workshop-web'};" }));
     await page.goto(base + 'app.html');
     await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Practice decision applied'));
     assert.equal(await page.locator('#rail-title').innerText(), 'Picked for Aroha');

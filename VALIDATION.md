@@ -27,7 +27,7 @@ End-to-end live rollback; attendee permissions; venue network check. Later secti
 
 ## Authorised live connection check
 
-- Supplied public browser keys configured; deployment `sky-workshop-web`, US, intended project 74301.
+- Supplied public browser keys configured; deployment `sky-workshop-web`, US, intended project Feature Flag workshop.
 - US event ingestion accepted all 60 events for 5 fictional users.
 - Actual browser SDK identity-only request returned HTTP 200; no targeting property values were supplied.
 - No entry returned for `presenter-recommendations`; default path shown with diagnostic message. This does not yet validate target rules or enrichment.
@@ -49,3 +49,7 @@ End-to-end live rollback; attendee permissions; venue network check. Later secti
 - Both modes: Aroha, Ben and Dev returned on from Segment 1 and rendered their new rails. Casey and Ellis returned off from All Other Users and rendered the default rail.
 - Identity-only requests supplied no targeting property values (empty user_properties object). This verifies the seeded-profile targeting exercise against real Amplitude responses.
 - No flag configuration was changed by the test. Live rollback remains to be rehearsed.
+
+## Project identity correction
+
+Organisation ID: 74301. Project name: Feature Flag workshop. The numeric project ID is not confirmed. Earlier project-ID labels were incorrect; event ingestion and evaluation used the supplied keys and did not route by the displayed ID. Management examples now use YOUR_PROJECT_ID. Seed confirmation checks the project name. No seed rerun or credential changes were made for this correction.

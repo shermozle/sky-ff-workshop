@@ -14,7 +14,7 @@ Open http://127.0.0.1:7430/. Nothing requires a hosted backend or a build step. 
 
 ## Current state
 
-- Target: Sky NZ org, dedicated project **74301**, **US** region.
+- Target: Sky NZ org, dedicated project **Feature Flag workshop** (organisation **74301**), **US** region.
 - Supplied public Analytics and client deployment keys configured in `public/config.js`; deployment: `sky-workshop-web`. Practice remains the default.
 - Live presenter flag evaluation returned HTTP 200 and `on` for all five viewers in explicit and identity-only modes. Five fictional profiles / 60 seed events were accepted by the US ingestion endpoint.
 - High-engagement targeting passed for all five viewers in both explicit and identity-only modes. Live rollback and participant permissions remain to be verified.
@@ -25,7 +25,7 @@ Open http://127.0.0.1:7430/. Nothing requires a hosted backend or a build step. 
 1. The web **client** deployment `sky-workshop-web` is configured.
 2. Approved public keys are in `public/config.js`; keep secret and management keys outside the site.
 3. Inspect the dry-run seed output with `node scripts/seed-users.cjs` (Node 20+, presenter machine only).
-4. Once authorised, set `SKY_AMPLITUDE_PROJECT_ID=74301` and `SKY_AMPLITUDE_API_KEY` securely, then run `node scripts/seed-users.cjs --send`.
+4. Once authorised, set `SKY_AMPLITUDE_PROJECT_NAME='Feature Flag workshop'` and `SKY_AMPLITUDE_API_KEY` securely, then run `node scripts/seed-users.cjs --send`.
 5. Verify stored profiles and identity-only targeting before the workshop.
 
 Never put server deployment, management, or project secret keys in `public/`.

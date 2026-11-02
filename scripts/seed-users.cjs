@@ -12,9 +12,9 @@ const events = profiles.flatMap(p => {
   ];
 });
 async function main() {
-  console.log(`${send ? 'SEND' : 'DRY RUN'} · US endpoint · intended project 74301 · ${profiles.length} synthetic users · ${events.length} events`);
-  if (!send) { console.log(JSON.stringify(events.filter(e => e.event_type === 'Workshop Profile Seeded'), null, 2)); console.log('To send after approval: SKY_AMPLITUDE_API_KEY=... node scripts/seed-users.cjs --send'); return; }
-  if (process.env.SKY_AMPLITUDE_PROJECT_ID !== '74301') throw new Error('Set SKY_AMPLITUDE_PROJECT_ID=74301 after confirming the API key belongs to this project.');
+  console.log(`${send ? 'SEND' : 'DRY RUN'} · US endpoint · intended project Feature Flag workshop · org 74301 · ${profiles.length} synthetic users · ${events.length} events`);
+  if (!send) { console.log(JSON.stringify(events.filter(e => e.event_type === 'Workshop Profile Seeded'), null, 2)); console.log('To send after approval: set SKY_AMPLITUDE_API_KEY and SKY_AMPLITUDE_PROJECT_NAME, then run node scripts/seed-users.cjs --send'); return; }
+  if (process.env.SKY_AMPLITUDE_PROJECT_NAME !== 'Feature Flag workshop') throw new Error('Set SKY_AMPLITUDE_PROJECT_NAME="Feature Flag workshop" after confirming the API key belongs to this project.');
   const apiKey = process.env.SKY_AMPLITUDE_API_KEY;
   if (!apiKey || /YOUR_|PLACEHOLDER/.test(apiKey)) throw new Error('Set SKY_AMPLITUDE_API_KEY to the approved project Analytics API key.');
   const response = await fetch('https://api2.amplitude.com/2/httpapi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ api_key: apiKey, events }), signal: AbortSignal.timeout(15000) });

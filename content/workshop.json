@@ -9,7 +9,7 @@
           "title": "Feature flags for Sky NZ",
           "minutes": 2,
           "body": "<p class=\"big\">Control recommendations and content promotions.<br>Choose who sees a change, then roll it back.</p><div class=\"grid c2\"><div class=\"card\"><span class=\"tag\">90 minutes</span><h3>Configure, observe, discuss</h3><p>Use a ready-made app and five fictional viewers.</p></div><div class=\"card\"><span class=\"tag\">Today\u2019s scope</span><h3>A static streaming prototype</h3><p>Live mode calls Amplitude directly. Backend placement is an architecture discussion.</p></div></div>",
-          "notes": "Open the app in practice mode. Explain that the catalogue and viewers are fictional. Today\u2019s app has no Sky backend. The project target is 74301 in the US; the supplied browser keys are configured. Verify live flags before presenting.",
+          "notes": "Open the app in practice mode. Explain that the catalogue and viewers are fictional. Today\u2019s app has no Sky backend. The target is Feature Flag workshop in Sky NZ organisation 74301, US region; the supplied browser keys are configured. Verify live flags before presenting.",
           "cut": "",
           "exercise": false
         },
@@ -100,7 +100,7 @@
         {
           "title": "Manage configuration programmatically",
           "minutes": 3,
-          "body": "<pre class=\"code\">GET   /api/1/flags?projectId=74301\nPOST  /api/1/flags\nPATCH /api/1/flags/{flagId}\n      {\"enabled\": false}</pre><p class=\"deck\">Management API: configuration changes.<br>SDK / evaluation API: runtime decisions.</p><p class=\"caption\">Presenter examples use management credentials outside the static site.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/apis/experiment/experiment-management-api-flags\">Management API flag endpoints</a></p>",
+          "body": "<pre class=\"code\">GET   /api/1/flags?projectId=YOUR_PROJECT_ID\nPOST  /api/1/flags\nPATCH /api/1/flags/{flagId}\n      {\"enabled\": false}</pre><p class=\"deck\">Management API: configuration changes.<br>SDK / evaluation API: runtime decisions.</p><p class=\"caption\">Presenter examples use management credentials outside the static site.</p><p class=\"source\">Source: <a href=\"https://amplitude.com/docs/apis/experiment/experiment-management-api-flags\">Management API flag endpoints</a></p>",
           "notes": "Open api-examples.html. Walk through a list, create and disable call. The create example associates a flag with a deployment but leaves activation to an explicit step. Management API access requires a separate management key, not either browser key. Runtime REST examples require a server deployment key. No participant runs these privileged calls.",
           "cut": "Cut point: show the list and disable calls only; the full examples remain in the guide.",
           "exercise": false
@@ -114,7 +114,7 @@
         {
           "title": "Open your workshop workspace",
           "minutes": 5,
-          "body": "<ol class=\"steps\"><li>Open the app and exercise guide from the hub.</li><li>Select Live once the presenter has configured the deployment.</li><li>Choose a unique prefix: <code>alex-recommendations</code>.</li><li>Use project 74301 and the shared web client deployment.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: you can find the project, app and viewer selector</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
+          "body": "<ol class=\"steps\"><li>Open the app and exercise guide from the hub.</li><li>Select Live once the presenter has configured the deployment.</li><li>Choose a unique prefix: <code>alex-recommendations</code>.</li><li>Use project Feature Flag workshop and the shared web client deployment.</li></ol><div class=\"pill-row\"><span class=\"pill hot\">Done when: you can find the project, app and viewer selector</span></div><div class=\"urlbox\"><a class=\"workshop-url\" href=\"index.html\">Open workshop hub \u2197</a></div>",
           "notes": "Confirm create, edit and activation permissions before starting. If live keys are still unavailable, tell the room explicitly that practice mode is a simulation. Have a presenter flag ready for anyone without edit access. Each attendee should use their own unique flag prefix. Do not edit someone else\u2019s flag.",
           "cut": "",
           "exercise": true
